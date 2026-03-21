@@ -1,12 +1,14 @@
 __author__ = 'Thomas Funk'
 __coauthors__ = 'Github Copilot & Gemini'
-__date__ = "2026/03/20"
+__date__ = "2026/03/21"
 
 import importlib
 import inspect
 import pathlib
 import logging
 from modules.base import BasePlugin
+
+log = logging.getLogger("nsd.loader")
 
 class PluginLoader:
     def __init__(self, config, send_ipc_func):
@@ -26,9 +28,9 @@ class PluginLoader:
                 module = importlib.import_module(module_name)
                 for name, obj in inspect.getmembers(module):
                     if inspect.isclass(obj) and issubclass(obj, BasePlugin) and obj is not BasePlugin:
-                        logging.info(f"[Loader] Plugin gefunden: {name}")
+                        log.info("Plugin loaded: %s", name)
                         self.plugins.append(obj(self.config, self.send_ipc))
             except Exception as e:
-                logging.error(f"[Loader] Fehler beim Laden von {module_name}: {e}")
+                log.error("Failed to load %s: %s", module_name, e)
 
         return self.plugins

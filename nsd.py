@@ -12,6 +12,8 @@ from core.config import ConfigManager
 from core.server import NightshadeDaemon  # Unser Socket-Server von vorhin
 from core.plugin_loader import PluginLoader
 
+log = logging.getLogger("nsd")
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Nightshade Daemon (NSD) - Ein leichtgewichtiger Daemon für Systemintegration")
     parser.add_argument("-d", "--debug", action="store_true", help="Aktiviert Debug-Logging")
@@ -19,13 +21,18 @@ def parse_args() -> argparse.Namespace:
 
 
 async def main(debug: bool) -> None:
+    # 1. Logging früh initialisieren (Config-Meldungen werden erfasst)
+    logging.basicConfig(
+        level=logging.DEBUG if debug else logging.INFO,
+        format='%(asctime)s %(levelname)-8s [%(name)s] %(message)s',
+        datefmt='%H:%M:%S',
+    )
+
+    # 2. Config laden – Log-Level ggf. auf konfigurierten Wert anpassen
     cfg = ConfigManager()
-    configured_log_level = str(cfg.get("global", "log_level") or "info").upper()
-    log_level = logging.DEBUG if debug else getattr(logging, configured_log_level, logging.INFO)
-    logging.basicConfig(level=log_level, format='%(levelname)s: %(message)s')
-    
-    # 1. Config laden
-    # 2. Daemon (IPC Server) initialisieren
+    if not debug:
+        configured_log_level = str(cfg.get("global", "log_level") or "info").upper()
+        logging.getLogger().setLevel(getattr(logging, configured_log_level, logging.INFO))
     daemon = NightshadeDaemon(cfg)
     
     # 3. Plugins laden
@@ -37,7 +44,7 @@ async def main(debug: bool) -> None:
     for plugin in plugins:
         tasks.append(plugin.run()) # Jedes geladene Plugin
 
-    logging.info(f"Starte {len(tasks)} Tasks...")
+    log.info("Starting %d tasks...", len(tasks))
     await asyncio.gather(*tasks)
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ Es arbeitet modular, kommuniziert über JSON-Pakete via Unix Domain Sockets und 
 
 - [x] IPC-Server: Asyncio-basierter Unix Domain Socket Server (/tmp/nsd.sock).
 - [x] Plugin-Loader: Dynamisches Laden von Modulen aus modules/, die von BasePlugin erben.
-- [ ] Logging: Zentralisierte Log-Ausgabe für alle Plugins und den Core.
+- [x] Logging: Zentralisierte Log-Ausgabe für alle Plugins und den Core.
 
 # Phase 2: System-Services & Hardware (Prio: Hoch)
 - [ ] Automount-Plugin:

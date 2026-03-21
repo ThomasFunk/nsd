@@ -8,6 +8,8 @@ import logging
 from pathlib import Path
 from typing import Any
 
+log = logging.getLogger("nsd.server")
+
 class NightshadeDaemon:
     def __init__(self, config: Any):
         self.config = config
@@ -16,7 +18,7 @@ class NightshadeDaemon:
 
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         self.clients.add(writer)
-        logging.info("[IPC] Neue Verbindung")
+        log.info("New connection")
 
         try:
             while True:
@@ -26,18 +28,18 @@ class NightshadeDaemon:
                 
                 try:
                     message = json.loads(data.decode())
-                    logging.debug("[IPC] Nachricht empfangen: %s", message)
+                    log.debug("Message received: %s", message)
                     
                     # Logik-Verteilung
                     await self.process_message(message, writer)
                     
                 except json.JSONDecodeError:
-                    logging.warning("[IPC] Ungültiges JSON empfangen")
+                    log.warning("Invalid JSON received")
 
         except Exception as e:
-            logging.error("[IPC] Fehler in Client-Loop: %s", e)
+            log.error("Error in client loop: %s", e)
         finally:
-            logging.info("[IPC] Verbindung geschlossen")
+            log.info("Connection closed")
             self.clients.remove(writer)
             writer.close()
             await writer.wait_closed()
@@ -51,7 +53,7 @@ class NightshadeDaemon:
                 client.write(message_bytes)
                 await client.drain()
             except Exception as exc:
-                logging.warning("[IPC] Broadcast an Client fehlgeschlagen: %s", exc)
+                log.warning("Broadcast to client failed: %s", exc)
 
     async def process_message(self, msg: dict[str, Any], sender_writer: asyncio.StreamWriter) -> None:
         """Hier passiert die Magie: Routing & Aktionen"""
@@ -64,7 +66,7 @@ class NightshadeDaemon:
         # Beispiel: Internes Kommando für den Daemon (z.B. Mount)
         elif msg_type == "command":
             action = msg.get("action")
-            logging.info("[IPC] Daemon führt Aktion aus: %s", action)
+            log.info("Executing action: %s", action)
             # Hier käme der Aufruf für udisks2 / mounting hin
 
     async def run(self) -> None:
@@ -73,7 +75,7 @@ class NightshadeDaemon:
             self.socket_path.unlink()
 
         server = await asyncio.start_unix_server(self.handle_client, path=str(self.socket_path))
-        logging.info("[IPC] Nightshade-Daemon läuft auf %s", self.socket_path)
+        log.info("Nightshade Daemon listening on %s", self.socket_path)
 
         async with server:
             await server.serve_forever()

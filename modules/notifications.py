@@ -1,3 +1,7 @@
+__author__ = 'Thomas Funk'
+__coauthors__ = 'Github Copilot & Gemini'
+__date__ = "2026/03/21"
+
 import asyncio
 from modules.base import BasePlugin
 from dbus_next.aio import MessageBus
@@ -39,7 +43,7 @@ class NotificationsPlugin(BasePlugin):
         bus.export('/org/freedesktop/Notifications', interface)
         
         await bus.request_name('org.freedesktop.Notifications')
-        print("[Notifications] DBus-Interface registriert.")
+        self.log.info("DBus interface registered: org.freedesktop.Notifications")
         
         # Plugin am Leben halten
         while True:

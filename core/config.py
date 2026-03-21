@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 import tomllib
 
+log = logging.getLogger("nsd.config")
+
 class ConfigManager:
     def __init__(self, app_name: str = "lns", config_name: str = "nsd.toml") -> None:
         self.app_name = app_name
@@ -54,7 +56,7 @@ class ConfigManager:
         self.config = copy.deepcopy(self.defaults)
 
         if not self.config_path.exists():
-            logging.warning(
+            log.warning(
                 "Config nicht gefunden (%s oder %s). Nutze Defaults.",
                 self.local_config_path,
                 self.xdg_config_path,
@@ -65,9 +67,9 @@ class ConfigManager:
             with self.config_path.open("rb") as f:
                 user_config = tomllib.load(f)
                 self.config = self._deep_merge(user_config, self.config)
-                logging.info(f"Konfiguration aus {self.config_path} geladen.")
+                log.info("Konfiguration aus %s geladen.", self.config_path)
         except Exception as e:
-            logging.error(f"Fehler beim Laden der Config: {e}. Nutze Defaults.")
+            log.error("Fehler beim Laden der Config: %s. Nutze Defaults.", e)
 
     def get(self, section: str, key: str | None = None) -> Any:
         """Bequemer Zugriff auf Werte."""

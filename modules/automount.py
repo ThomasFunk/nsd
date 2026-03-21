@@ -1,16 +1,15 @@
 __author__ = 'Thomas Funk'
 __coauthors__ = 'Github Copilot & Gemini'
-__date__ = "2026/03/20"
+__date__ = "2026/03/21"
 
 import asyncio
 import pyudev
 import subprocess
-import logging
 from modules.base import BasePlugin
 
 class AutomountPlugin(BasePlugin):
-    async def run(self):
-        logging.info("[Automount] Starte Monitoring...")
+    async def run(self) -> None:
+        self.log.info("Starting device monitoring")
         # Wir lassen das Monitoring in einem separaten Thread laufen,
         # damit asyncio weiterhin auf den Socket reagieren kann.
         await asyncio.to_thread(self._monitor_loop)
@@ -32,7 +31,7 @@ class AutomountPlugin(BasePlugin):
         # Check gegen die Config
         blacklist = self.config.get("automount", "blacklist") or []
         if dev_node in blacklist:
-            logging.info(f"[Automount] {dev_node} ist auf der Blacklist. Ignoriere.")
+            self.log.info("Device %s is blacklisted, skipping.", dev_node)
             return
 
         try:
@@ -44,7 +43,7 @@ class AutomountPlugin(BasePlugin):
             
             # Mountpoint extrahieren
             mount_point = result.stdout.split("at")[-1].strip()
-            logging.info(f"[Automount] Erfolgreich gemountet: {dev_node} -> {mount_point}")
+            self.log.info("Mounted %s at %s", dev_node, mount_point)
 
             # Nachricht an ALLE (ld-icons, wbar, etc.) senden
             asyncio.run_coroutine_threadsafe(
@@ -58,11 +57,10 @@ class AutomountPlugin(BasePlugin):
             )
 
         except subprocess.CalledProcessError as e:
-            logging.error(f"[Automount] Fehler beim Mounten von {dev_node}: {e.stderr}")
+            self.log.error("Failed to mount %s: %s", dev_node, e.stderr)
 
     def _handle_unmount(self, device):
-        # Hier könnten wir ld-icons informieren, das Icon zu entfernen
-        logging.info(f"[Automount] Gerät entfernt: {device.device_node}")
+        self.log.info("Device removed: %s", device.device_node)
         # IPC-Broadcast für 'unmounted' analog zu oben...
         asyncio.run_coroutine_threadsafe(
             self.send_ipc({
