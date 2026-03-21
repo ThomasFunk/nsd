@@ -117,6 +117,20 @@ Quick syntax checks:
 ./venv/bin/python -m py_compile nsd.py core/*.py modules/*.py tools/nsd-send/nsd-send.py
 ```
 
+## Polkit Integration (Automount)
+
+nsd uses `udisksctl` for mounting, which delegates privilege checks to Polkit.
+To allow the active console user to mount/unmount without a password prompt,
+install the provided rules file:
+
+```bash
+sudo cp polkit/90-nsd-automount.rules /etc/polkit-1/rules.d/
+sudo chmod 644 /etc/polkit-1/rules.d/90-nsd-automount.rules
+```
+
+Requires: polkit ≥ 0.106, udisks2. The rule grants mount/unmount/eject rights
+to any active local user in the `users` group — no `sudo` in code needed.
+
 Known current state:
 - Automount and notifications are available as plugins, but still evolving.
 - No GUI code is included in the daemon itself.

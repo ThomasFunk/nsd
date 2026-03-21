@@ -1,0 +1,28 @@
+// polkit rules for nsd automount plugin
+// Allows the active local console user to mount and unmount drives
+// via udisks2 without a password prompt.
+//
+// Installation:
+//   sudo cp polkit/90-nsd-automount.rules /etc/polkit-1/rules.d/
+//   sudo chmod 644 /etc/polkit-1/rules.d/90-nsd-automount.rules
+//
+// Requires: polkit >= 0.106, udisks2
+
+polkit.addRule(function(action, subject) {
+    var udisksActions = [
+        "org.freedesktop.udisks2.filesystem-mount",
+        "org.freedesktop.udisks2.filesystem-mount-other-seat",
+        "org.freedesktop.udisks2.filesystem-unmount-others",
+        "org.freedesktop.udisks2.eject-media",
+        "org.freedesktop.udisks2.eject-media-other-seat",
+        "org.freedesktop.udisks2.power-off-drive",
+        "org.freedesktop.udisks2.power-off-drive-other-seat"
+    ];
+
+    if (udisksActions.indexOf(action.id) >= 0 &&
+        subject.isInGroup("users") &&
+        subject.local &&
+        subject.active) {
+        return polkit.Result.YES;
+    }
+});

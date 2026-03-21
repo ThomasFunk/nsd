@@ -15,6 +15,9 @@ The format is based on Keep a Changelog.
     `asyncio.run_coroutine_threadsafe()`; removes deprecated `get_event_loop()` in threads.
   - Mount-point parsing strips trailing period/whitespace from udisksctl output.
   - IPC broadcast payloads now include `label`, `uuid`, and `fs_type`.
+- Polkit rules file (`polkit/90-nsd-automount.rules`) for passwordless udisks2
+  mount/unmount/eject for active local users (polkit ≥ 0.106, JavaScript format).
+  Installation documented in README.
 
 ### Changed
 
