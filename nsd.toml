@@ -9,6 +9,7 @@ autostart = ["ld-icons", "h-corners"]
 automount = true
 notifications = true
 labwc_bridge = true
+hot_corner_relay = true
 
 [automount]
 # Regeln für das Einbinden von Medien
@@ -21,3 +22,7 @@ blacklist = ["/dev/sda1"] # Partitionen, die ignoriert werden sollen
 timeout = 5000  # Millisekunden, bis ein Popup verschwindet
 max_visible = 3
 position = "top-right"
+
+[hot_corner_relay]
+# Broadcast command execution results to IPC clients.
+result_broadcast = true

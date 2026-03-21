@@ -73,3 +73,35 @@ def test_get_returns_section_or_single_value(monkeypatch, tmp_path):
     assert isinstance(automount_section, dict)
     assert automount_section["mount_path"] == "/mnt/custom"
     assert cfg.get("automount", "mount_path") == "/mnt/custom"
+
+
+def test_loads_companion_tool_configs_from_same_xdg_directory(monkeypatch, tmp_path):
+    config_name = _unique_name()
+    xdg_home = tmp_path / "xdg"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
+
+    config_dir = xdg_home / "lns"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    (config_dir / config_name).write_text('[global]\nlog_level = "debug"\n', encoding="utf-8")
+    (config_dir / "h-corners.toml").write_text('[top-left]\ncommand = "notify-send top-left"\n', encoding="utf-8")
+    (config_dir / "ld-icons.toml").write_text('[behavior]\nshow_mounted_drives = true\n', encoding="utf-8")
+
+    cfg = ConfigManager(config_name=config_name)
+
+    assert cfg.get("h-corners")["top-left"]["command"] == "notify-send top-left"
+    assert cfg.get("ld-icons")["behavior"]["show_mounted_drives"] is True
+
+
+def test_missing_main_config_still_loads_companion_tool_configs(monkeypatch, tmp_path):
+    config_name = _unique_name()
+    xdg_home = tmp_path / "xdg"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
+
+    config_dir = xdg_home / "lns"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    (config_dir / "h-corners.toml").write_text('[bottom-right]\ncommand = "wbar"\n', encoding="utf-8")
+
+    cfg = ConfigManager(config_name=config_name)
+
+    assert cfg.get("global", "socket_path") == "/tmp/nsd.sock"
+    assert cfg.get("h-corners")["bottom-right"]["command"] == "wbar"

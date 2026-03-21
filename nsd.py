@@ -45,6 +45,11 @@ async def main(debug: bool) -> None:
     loader = PluginLoader(cfg, daemon.broadcast)
     plugins = loader.load_plugins()
 
+    for plugin in plugins:
+        register_handlers = getattr(plugin, "register_handlers", None)
+        if callable(register_handlers):
+            register_handlers(daemon)
+
     # 5. Start daemon and all loaded plugin tasks.
     tasks = [daemon.run()]
     for plugin in plugins:

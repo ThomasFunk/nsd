@@ -28,6 +28,12 @@ class FakeDaemon:
 
 
 class FakePlugin:
+    def __init__(self):
+        self.handler_registration = []
+
+    def register_handlers(self, daemon):
+        self.handler_registration.append(daemon)
+
     async def run(self):
         return None
 
@@ -50,6 +56,7 @@ async def test_main_non_debug_applies_config_log_level_and_wires_tasks(monkeypat
     gather_calls = []
     basic_levels = []
     root_levels = []
+    fake_plugin = FakePlugin()
 
     def fake_basic_config(**kwargs):
         basic_levels.append(kwargs.get("level"))
@@ -67,7 +74,7 @@ async def test_main_non_debug_applies_config_log_level_and_wires_tasks(monkeypat
             created["send_ipc_func"] = send_ipc_func
 
         def load_plugins(self):
-            return [FakePlugin()]
+            return [fake_plugin]
 
     async def fake_gather(*tasks):
         gather_calls.append(tasks)
@@ -86,6 +93,7 @@ async def test_main_non_debug_applies_config_log_level_and_wires_tasks(monkeypat
     assert basic_levels == [logging.INFO]
     assert root_levels == [logging.WARNING]
     assert callable(created["send_ipc_func"])
+    assert fake_plugin.handler_registration and isinstance(fake_plugin.handler_registration[0], FakeDaemon)
     assert len(gather_calls) == 1
     assert len(gather_calls[0]) == 2
 

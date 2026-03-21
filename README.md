@@ -70,6 +70,18 @@ Resolution order:
 1. Workspace-local config: `<workspace>/nsd.toml`
 2. XDG config: `~/.config/lns/nsd.toml` (or `$XDG_CONFIG_HOME/lns/nsd.toml`)
 
+Optional companion config files in the same directory:
+- `h-corners.toml` for hot-corner behavior/configuration
+- `ld-icons.toml` for desktop icon tool configuration
+
+These files are loaded by `ConfigManager` as additional top-level sections:
+- `config.get("h-corners")`
+- `config.get("ld-icons")`
+
+Important: these companion files are expected in the **same directory as `nsd.toml`**
+(workspace-local or XDG config directory). They are **not** loaded from the
+separate external project folders of `h-corners` or `ld-icons`.
+
 Important keys:
 - `[global].socket_path`
 - `[global].log_level`
@@ -79,6 +91,7 @@ Important keys:
 - `[labwc_bridge].status_command`
 - `[labwc_bridge].close_window_command`
 - `[labwc_bridge].switch_workspace_command`
+- `[hot_corner_relay].result_broadcast`
 
 Example config is provided in `nsd.toml`.
 
@@ -165,6 +178,12 @@ Send labwc commands:
 ```bash
 python3 tools/nsd-send/nsd-send.py --type command --action labwc.close_window
 python3 tools/nsd-send/nsd-send.py --type command --action labwc.switch_workspace --payload '{"workspace":"2"}'
+```
+
+Hot-corner relay command example:
+
+```bash
+python3 tools/nsd-send/nsd-send.py --type command --action hotcorner.trigger --payload '{"corner":"top_left","name":"TopLeft","command":"notify-send hotcorner triggered"}'
 ```
 
 Send a broadcast with payload:
