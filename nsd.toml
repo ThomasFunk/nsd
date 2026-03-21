@@ -10,6 +10,7 @@ automount = true
 notifications = true
 labwc_bridge = true
 hot_corner_relay = true
+clipboard = true
 
 [automount]
 # Regeln für das Einbinden von Medien
@@ -26,3 +27,9 @@ position = "top-right"
 [hot_corner_relay]
 # Broadcast command execution results to IPC clients.
 result_broadcast = true
+
+[clipboard]
+# Max number of clipboard history entries kept in RAM.
+max_items = 50
+# Polling interval in seconds for clipboard checks.
+poll_interval = 0.5

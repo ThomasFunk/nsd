@@ -61,6 +61,7 @@ class ConfigManager:
                 "notifications": True,
                 "labwc_bridge": True,
                 "hot_corner_relay": True,
+                "clipboard": True,
             },
             "automount": {
                 "mount_path": "/media",
@@ -74,6 +75,10 @@ class ConfigManager:
             },
             "hot_corner_relay": {
                 "result_broadcast": True,
+            },
+            "clipboard": {
+                "max_items": 20,
+                "poll_interval": 0.5,
             }
         }
 
