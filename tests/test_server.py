@@ -100,3 +100,43 @@ async def test_handle_client_closes_writer_and_removes_client():
     assert writer.closed is True
     assert writer.wait_closed_called is True
     assert writer not in daemon.clients
+
+
+@pytest.mark.asyncio
+async def test_process_message_dispatches_registered_async_command_handler():
+    daemon = NightshadeDaemon(DummyConfig())
+    sender = FakeWriter()
+    calls = []
+
+    async def handler(payload):
+        calls.append(payload)
+
+    daemon.register_command_handler("labwc.switch_workspace", handler)
+
+    await daemon.process_message(
+        {
+            "type": "command",
+            "action": "labwc.switch_workspace",
+            "payload": {"workspace": "2"},
+        },
+        sender,
+    )
+
+    assert calls == [{"workspace": "2"}]
+
+
+@pytest.mark.asyncio
+async def test_process_message_ignores_unknown_command_handler():
+    daemon = NightshadeDaemon(DummyConfig())
+    sender = FakeWriter()
+
+    await daemon.process_message(
+        {
+            "type": "command",
+            "action": "labwc.unknown",
+            "payload": {},
+        },
+        sender,
+    )
+
+    assert True

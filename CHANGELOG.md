@@ -7,6 +7,17 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- No changes yet.
+
+## [0.4.0] - 2026-03-21
+
+### Added
+
+- Labwc bridge plugin (`modules/labwc_bridge.py`):
+  - IPC command interface for `labwc.close_window` and `labwc.switch_workspace`.
+  - Periodic status polling with `labwc.status_changed` broadcast on state changes.
+  - Configurable command templates and poll interval via `[labwc_bridge]`.
+- Unit tests for labwc bridge (`tests/test_labwc_bridge.py`).
 - Pytest-based unit test suite:
   - `tests/test_config.py` for config resolution, merge, and fallback behavior.
   - `tests/test_server.py` for IPC broadcast routing and client lifecycle handling.
@@ -30,6 +41,7 @@ The format is based on Keep a Changelog.
 
 ### Changed
 
+- `core/server.py` now supports command-handler registration and dispatch for `type="command"` messages.
 - Improved inline documentation in core modules with English docstrings and comments:
 	- `core/config.py`
 	- `core/plugin_loader.py`

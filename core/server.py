@@ -5,6 +5,7 @@ __date__ = "2026/03/21"
 """Async Unix Domain Socket server used by nsd for JSON IPC."""
 
 import asyncio
+import inspect
 import json
 import logging
 from pathlib import Path
@@ -19,7 +20,13 @@ class NightshadeDaemon:
         """Initialize daemon state from the provided configuration object."""
         self.config = config
         self.clients: set[asyncio.StreamWriter] = set()
+        self.command_handlers: dict[str, Any] = {}
         self.socket_path = Path(self.config.get("global", "socket_path") or "/tmp/nsd.sock")
+
+    def register_command_handler(self, action: str, handler: Any) -> None:
+        """Register one IPC command handler for a specific action string."""
+        self.command_handlers[action] = handler
+        log.info("Registered command handler: %s", action)
 
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """Read messages from a client until disconnect and process them."""
@@ -79,7 +86,17 @@ class NightshadeDaemon:
         elif msg_type == "command":
             action = msg.get("action")
             log.info("Executing action: %s", action)
-            # Future command handlers (e.g. mount operations) go here.
+            if not action:
+                log.warning("Command message missing action field")
+                return
+            handler = self.command_handlers.get(action)
+            if handler is None:
+                log.warning("No handler registered for action: %s", action)
+                return
+            payload = msg.get("payload", {})
+            result = handler(payload)
+            if inspect.isawaitable(result):
+                await result
 
     async def run(self) -> None:
         """Start the Unix socket server and serve forever."""

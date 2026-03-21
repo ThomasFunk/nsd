@@ -59,6 +59,12 @@ class ConfigManager:
             "automount": {
                 "mount_path": "/media",
                 "blacklist": []
+            },
+            "labwc_bridge": {
+                "poll_interval": 1.0,
+                "status_command": "labwc-msg -j -t get_outputs",
+                "close_window_command": "labwc-msg -t close",
+                "switch_workspace_command": "labwc-msg -t workspace {workspace}",
             }
         }
 

@@ -1,7 +1,8 @@
 # nsd (Nightshade Daemon)
 
-`nsd` is the central service hub for the **labwc-Nightshade** desktop environment.
-It provides modular background services and IPC communication via **Unix Domain Sockets** using **JSON packets**.
+`nsd` is the central communication hub (server) for the **labwc-Nightshade** desktop environment.
+It coordinates plugins and external clients over one local IPC endpoint, so UI tools and helper daemons
+can exchange events and commands through a single message bus.
 
 ## Status
 
@@ -20,6 +21,11 @@ See [Roadmap.md](Roadmap.md) for details.
 - **Core components:** `core/config.py`, `core/server.py`, `core/plugin_loader.py`
 - **Plugins:** `modules/` (all plugins must inherit from `modules/base.py::BasePlugin`)
 - **IPC transport:** Unix Domain Socket (default: `/tmp/nsd.sock`)
+
+`nsd` acts as the IPC server:
+- Clients connect to the socket.
+- Clients can send commands/events to `nsd`.
+- `nsd` broadcasts messages to connected clients.
 
 ## Requirements
 
@@ -69,12 +75,26 @@ Important keys:
 - `[global].log_level`
 - `[modules].*`
 - `[automount].blacklist`
+- `[labwc_bridge].poll_interval`
+- `[labwc_bridge].status_command`
+- `[labwc_bridge].close_window_command`
+- `[labwc_bridge].switch_workspace_command`
 
 Example config is provided in `nsd.toml`.
 
-## IPC JSON Message Format
+## IPC Protocol
 
-All messages should follow this structure:
+- **Transport:** Unix Domain Socket
+- **Path (default):** `/tmp/nsd.sock`
+- **Encoding:** UTF-8
+- **Payload format:** JSON objects
+
+For server broadcasts, one JSON message is sent per line (`\n` delimited).
+Client implementations in C++, Rust, Go, or other languages can parse the socket stream line-by-line and decode each line as UTF-8 JSON.
+
+## JSON Message Structure
+
+All IPC messages should follow this structure:
 
 ```json
 {
@@ -87,6 +107,49 @@ All messages should follow this structure:
 }
 ```
 
+Field semantics:
+- `src`: Message origin (`nsd.automount`, `nsd.labwc_bridge`, `simplewx`, custom client name, ...).
+- `type`: Message class (`command` for control requests, `broadcast` for fan-out events, `event` for generic signals).
+- `action`: Concrete operation or event name (for example `labwc.switch_workspace`, `mounted`, `show_notification`).
+- `payload`: Action-specific JSON object with parameters or result data.
+
+## Generic Python IPC Example (socket + json only)
+
+```python
+import socket
+import json
+
+SOCKET_PATH = "/tmp/nsd.sock"
+
+msg = {
+	"src": "example-client",
+	"type": "command",
+	"action": "labwc.switch_workspace",
+	"payload": {"workspace": "2"},
+}
+
+with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+	client.connect(SOCKET_PATH)
+
+	# Send one UTF-8 JSON message.
+	client.sendall(json.dumps(msg).encode("utf-8"))
+
+	# Receive and decode incoming UTF-8 JSON messages (newline-delimited stream).
+	buffer = ""
+	while True:
+		chunk = client.recv(4096)
+		if not chunk:
+			break
+		buffer += chunk.decode("utf-8")
+		while "\n" in buffer:
+			line, buffer = buffer.split("\n", 1)
+			line = line.strip()
+			if not line:
+				continue
+			incoming = json.loads(line)
+			print("RECV:", incoming)
+```
+
 ## CLI Test Tool (`nsd-send`)
 
 Path: `tools/nsd-send/nsd-send.py`
@@ -95,6 +158,13 @@ Send a command:
 
 ```bash
 python3 tools/nsd-send/nsd-send.py --action reload
+```
+
+Send labwc commands:
+
+```bash
+python3 tools/nsd-send/nsd-send.py --type command --action labwc.close_window
+python3 tools/nsd-send/nsd-send.py --type command --action labwc.switch_workspace --payload '{"workspace":"2"}'
 ```
 
 Send a broadcast with payload:

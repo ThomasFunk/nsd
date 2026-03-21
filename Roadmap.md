@@ -25,10 +25,10 @@ It is modular, communicates via JSON packets over Unix Domain Sockets, and is fu
 - [x] Notification server:
     - [x] Register on DBus (org.freedesktop.Notifications).
     - [x] Convert DBus signals into nsd JSON packets for display in SimpleWx.
-- [ ] Extend simpleWx with IPC client functionality - base functions enable_nsd und nsd_send are available but have to be checked for propper work. Hint: don't switch to asyncio because wx has issues with it.
-- [ ] Labwc-Bridge:
-    - [ ] Implement an interface for remote control of labwc (close windows, switch workspaces).
-    - [ ] Monitor labwc status changes.
+- [x] Extend simpleWx with IPC client functionality - base functions enable_nsd und nsd_send are available but have to be checked for propper work. Hint: don't switch to asyncio because wx has issues with it.
+- [x] Labwc-Bridge:
+    - [x] Implement an interface for remote control of labwc (close windows, switch workspaces).
+    - [x] Monitor labwc status changes.
 - [ ] Hot-corner relay: Receive signals from h-corners and execute configured commands.
 
 # Phase 4: Tools & Stabilization (Priority: Low)
