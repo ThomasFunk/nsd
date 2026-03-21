@@ -13,6 +13,10 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- Menu watcher plugin (`modules/menu_watcher.py`) for `.desktop` directory monitoring
+  (`/usr/share/applications`, `~/.local/share/applications`, plus configurable extra paths)
+  with debounce and optional app list payload.
+- Unit tests for menu watcher plugin (`tests/test_menu_watcher.py`).
 - Clipboard plugin (`modules/clipboard.py`) with in-memory history, configurable limits,
   and IPC command handlers (`get_history`, `clear`, plus `clipboard.*` aliases).
 - Unit tests for clipboard plugin (`tests/test_clipboard.py`).

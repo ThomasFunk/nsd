@@ -94,6 +94,9 @@ Important keys:
 - `[hot_corner_relay].result_broadcast`
 - `[clipboard].max_items`
 - `[clipboard].poll_interval`
+- `[menu_watcher].extra_paths`
+- `[menu_watcher].debounce_seconds`
+- `[menu_watcher].include_app_list`
 
 Example config is provided in `nsd.toml`.
 
@@ -233,6 +236,12 @@ Clipboard plugin behavior:
 - history size is limited by `[clipboard].max_items` (for example `50`).
 - viewers can request history via `get_history` / `clipboard.get_history`.
 - clearing is supported via `clear` / `clipboard.clear`.
+
+Menu watcher behavior:
+- watches application directories for `.desktop` file changes
+- debounces bursts of file events before broadcasting `apps_changed`
+- can optionally include current app IDs in payload (`include_app_list = true`)
+- supports command-based app list query via `get_apps` / `menu.get_apps`
 
 Send a broadcast with payload:
 

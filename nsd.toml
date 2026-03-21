@@ -11,6 +11,7 @@ notifications = true
 labwc_bridge = true
 hot_corner_relay = true
 clipboard = true
+menu_watcher = true
 
 [automount]
 # Regeln für das Einbinden von Medien
@@ -33,3 +34,9 @@ result_broadcast = true
 max_items = 50
 # Polling interval in seconds for clipboard checks.
 poll_interval = 0.5
+
+[menu_watcher]
+enabled = true
+extra_paths = ["/opt/my_apps/share/applications"]
+debounce_seconds = 1.0
+include_app_list = false

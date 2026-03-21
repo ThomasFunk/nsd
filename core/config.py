@@ -62,6 +62,7 @@ class ConfigManager:
                 "labwc_bridge": True,
                 "hot_corner_relay": True,
                 "clipboard": True,
+                "menu_watcher": True,
             },
             "automount": {
                 "mount_path": "/media",
@@ -79,6 +80,12 @@ class ConfigManager:
             "clipboard": {
                 "max_items": 20,
                 "poll_interval": 0.5,
+            },
+            "menu_watcher": {
+                "enabled": True,
+                "extra_paths": [],
+                "debounce_seconds": 1.0,
+                "include_app_list": False,
             }
         }
 
