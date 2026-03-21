@@ -19,7 +19,7 @@ It is modular, communicates via JSON packets over Unix Domain Sockets, and is fu
     - [x] Trigger udisksctl for passwordless mounting.
     - [x] Broadcast mounted/unmounted events to the socket.
 - [x] Polkit integration: Create and document .rules for privileged actions without password prompts.
-- [ ] Desktop sync: Ensure ld-icons can process mount events immediately.
+- [x] Desktop sync: Ensure ld-icons can process mount events immediately.
 
 # Phase 3: Desktop Integration (Priority: Medium)
 - [ ] Notification server:

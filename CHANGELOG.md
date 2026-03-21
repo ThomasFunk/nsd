@@ -7,6 +7,9 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- Desktop-sync: embedded `NsdClient` in `ld-icons/ldicons.py` — non-blocking Unix socket client,
+  drive icon added/removed on `mounted`/`unmounted` IPC events, configurable file manager via
+  new `[Daemon]` section in `ldicons.conf`.
 - Automount plugin (`modules/automount.py`) — Phase 2 complete:
   - `monitor.start()` call added before event loop (was missing).
   - Mount registry (`_mounted`) tracks active mounts for richer unmount payloads.
