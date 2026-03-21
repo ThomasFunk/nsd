@@ -14,10 +14,10 @@ It is modular, communicates via JSON packets over Unix Domain Sockets, and is fu
 - [x] Logging: Centralized log output for all plugins and the core.
 
 # Phase 2: System Services & Hardware (Priority: High)
-- [ ] Automount-Plugin:
-    - [ ] Integrate pyudev for hardware events.
-    - [ ] Trigger udisksctl for passwordless mounting.
-    - [ ] Broadcast mounted/unmounted events to the socket.
+- [x] Automount-Plugin:
+    - [x] Integrate pyudev for hardware events.
+    - [x] Trigger udisksctl for passwordless mounting.
+    - [x] Broadcast mounted/unmounted events to the socket.
 - [ ] Polkit integration: Create and document .rules for privileged actions without password prompts.
 - [ ] Desktop sync: Ensure ld-icons can process mount events immediately.
 

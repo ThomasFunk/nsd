@@ -5,6 +5,17 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Added
+
+- Automount plugin (`modules/automount.py`) — Phase 2 complete:
+  - `monitor.start()` call added before event loop (was missing).
+  - Mount registry (`_mounted`) tracks active mounts for richer unmount payloads.
+  - `MOUNTABLE_FS_TYPES` allowlist prevents auto-mounting swap and unknown filesystems.
+  - Loop stored via `asyncio.get_running_loop()` in `run()` and passed to
+    `asyncio.run_coroutine_threadsafe()`; removes deprecated `get_event_loop()` in threads.
+  - Mount-point parsing strips trailing period/whitespace from udisksctl output.
+  - IPC broadcast payloads now include `label`, `uuid`, and `fs_type`.
+
 ### Changed
 
 - Improved inline documentation in core modules with English docstrings and comments:
