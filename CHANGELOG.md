@@ -9,7 +9,7 @@ The format is based on Keep a Changelog.
 
 - No changes yet.
 
-## [0.4.0] - 2026-03-21
+## [0.4.1] - 2026-03-21
 
 ### Added
 
@@ -17,6 +17,22 @@ The format is based on Keep a Changelog.
 - Hot-corner relay plugin (`modules/hot_corner_relay.py`) to receive `h-corners` trigger messages,
   execute configured commands, and optionally broadcast execution results.
 - Unit tests for hot-corner relay (`tests/test_hot_corner_relay.py`).
+
+### Changed
+
+- `README.md` now clarifies that companion config files are loaded from the same directory as `nsd.toml`,
+  not from the external `h-corners` or `ld-icons` project folders.
+- `nsd.py` now lets plugins register daemon command handlers during startup.
+
+### Fixed
+
+- `modules/notifications.py`: DBus signature annotations are now parser-safe for editor diagnostics.
+- Notification tests updated to exercise the DBus-decorated implementation path reliably.
+
+## [0.4.0] - 2026-03-21
+
+### Added
+
 - Labwc bridge plugin (`modules/labwc_bridge.py`):
   - IPC command interface for `labwc.close_window` and `labwc.switch_workspace`.
   - Periodic status polling with `labwc.status_changed` broadcast on state changes.
@@ -45,7 +61,6 @@ The format is based on Keep a Changelog.
 
 ### Changed
 
-- `nsd.py` now lets plugins register daemon command handlers during startup.
 - `core/server.py` now supports command-handler registration and dispatch for `type="command"` messages.
 - Improved inline documentation in core modules with English docstrings and comments:
 	- `core/config.py`

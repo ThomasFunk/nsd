@@ -5,7 +5,7 @@
 __author__ = 'Thomas Funk'
 __coauthors__ = 'Github Copilot & Gemini'
 __date__ = "2026/03/21"
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 import asyncio
 import argparse
