@@ -1,6 +1,6 @@
 __author__ = 'Thomas Funk'
 __coauthors__ = 'Github Copilot & Gemini'
-__date__ = "2026/03/21"
+__date__ = "2026/03/22"
 
 """Configuration management for nsd.
 
