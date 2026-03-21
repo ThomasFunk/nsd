@@ -117,6 +117,13 @@ Quick syntax checks:
 ./venv/bin/python -m py_compile nsd.py core/*.py modules/*.py tools/nsd-send/nsd-send.py
 ```
 
+Run unit tests:
+
+```bash
+./venv/bin/pip install -r requirements-dev.txt
+./venv/bin/python -m pytest -q
+```
+
 ## Polkit Integration (Automount)
 
 nsd uses `udisksctl` for mounting, which delegates privilege checks to Polkit.

@@ -7,6 +7,12 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- Pytest-based unit test suite:
+  - `tests/test_config.py` for config resolution, merge, and fallback behavior.
+  - `tests/test_server.py` for IPC broadcast routing and client lifecycle handling.
+  - `tests/test_plugin_loader.py` for dynamic plugin discovery and import-failure resilience.
+  - `tests/test_nsd.py` for `nsd.py` argument parsing and startup wiring.
+- Test tooling files: `pytest.ini` and `requirements-dev.txt`.
 - Desktop-sync: embedded `NsdClient` in `ld-icons/ldicons.py` — non-blocking Unix socket client,
   drive icon added/removed on `mounted`/`unmounted` IPC events, configurable file manager via
   new `[Daemon]` section in `ldicons.conf`.
@@ -34,7 +40,9 @@ The format is based on Keep a Changelog.
 	- `modules/notifications.py`
 	- `nsd.py`
 - Updated `README.md` to match current nsd architecture, setup, run workflow, configuration behavior, and IPC examples.
+- Updated `README.md` with explicit unit-test install/run commands.
 - Translated `Roadmap.md` to English while preserving milestones and checkbox states.
+- Updated `Roadmap.md` with completed unit-test milestone in Phase 4.
 
 ## [0.1.0] - 2026-03-21
 

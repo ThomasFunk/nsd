@@ -31,6 +31,7 @@ It is modular, communicates via JSON packets over Unix Domain Sockets, and is fu
 - [ ] Hot-corner relay: Receive signals from h-corners and execute configured commands.
 
 # Phase 4: Tools & Stabilization (Priority: Low)
+- [x] Unit tests: Add pytest-based tests for configuration, IPC server, plugin loader, and nsd entrypoint wiring.
 - [ ] nsd-send CLI: Small Python tool to manually send JSON commands to the socket (for shell scripts).
 - [ ] Hot reload: Implement SIGHUP to reload TOML configuration without process restart.
 - [ ] Auto-discovery: Plugins should detect at runtime which other LNS tools (such as wbar) are currently active.
