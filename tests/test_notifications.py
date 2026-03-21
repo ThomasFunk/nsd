@@ -25,7 +25,7 @@ async def test_notify_schedules_ipc_message(monkeypatch):
     monkeypatch.setattr("modules.notifications.asyncio.create_task", fake_create_task)
 
     service = NotificationService("org.freedesktop.Notifications", fake_send_ipc)
-    notification_id = await service.Notify.__wrapped__(
+    notification_id = service.Notify.__wrapped__(
         service,
         "demo-app",
         0,
@@ -62,7 +62,7 @@ async def test_notify_reuses_replaces_id_when_provided(monkeypatch):
     monkeypatch.setattr("modules.notifications.asyncio.create_task", lambda coro: original_create_task(coro))
 
     service = NotificationService("org.freedesktop.Notifications", lambda _msg: asyncio.sleep(0))
-    notification_id = await service.Notify.__wrapped__(
+    notification_id = service.Notify.__wrapped__(
         service,
         "demo-app",
         77,

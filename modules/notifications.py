@@ -4,11 +4,19 @@ __date__ = "2026/03/21"
 
 """DBus notification bridge plugin for nsd."""
 
+# pyright: reportUndefinedVariable=false, reportInvalidTypeForm=false
+
 import asyncio
 from modules.base import BasePlugin
 from dbus_next.aio import MessageBus
 from dbus_next.service import ServiceInterface, method
 from dbus_next import BusType
+
+DBUS_S = "s"
+DBUS_U = "u"
+DBUS_AS = "as"
+DBUS_A_SV = "a{sv}"
+DBUS_I = "i"
 
 class NotificationService(ServiceInterface):
     """Expose org.freedesktop.Notifications and forward events to IPC."""
@@ -42,8 +50,17 @@ class NotificationService(ServiceInterface):
         }
 
     @method()
-    async def Notify(self, app_name: 's', replaces_id: 'u', app_icon: 's', 
-                     summary: 's', body: 's', actions: 'as', hints: 'a{sv}', expire_timeout: 'i') -> 'u':
+    def Notify(
+        self,
+        app_name: DBUS_S,
+        replaces_id: DBUS_U,
+        app_icon: DBUS_S,
+        summary: DBUS_S,
+        body: DBUS_S,
+        actions: DBUS_AS,
+        hints: DBUS_A_SV,
+        expire_timeout: DBUS_I,
+    ) -> DBUS_U:
         """Translate DBus notification calls into nsd JSON broadcasts."""
 
         # Convert the DBus payload into the nsd JSON event format.
