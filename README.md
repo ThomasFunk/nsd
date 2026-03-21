@@ -92,6 +92,8 @@ Important keys:
 - `[labwc_bridge].close_window_command`
 - `[labwc_bridge].switch_workspace_command`
 - `[hot_corner_relay].result_broadcast`
+- `[clipboard].max_items`
+- `[clipboard].poll_interval`
 
 Example config is provided in `nsd.toml`.
 
@@ -125,6 +127,39 @@ Field semantics:
 - `type`: Message class (`command` for control requests, `broadcast` for fan-out events, `event` for generic signals).
 - `action`: Concrete operation or event name (for example `labwc.switch_workspace`, `mounted`, `show_notification`).
 - `payload`: Action-specific JSON object with parameters or result data.
+
+### Command Request-Response (direct reply)
+
+`nsd` supports direct responses for command messages when either
+- `request_id` is present, or
+- `expect_response` is set to `true`.
+
+Example request:
+
+```json
+{
+	"src": "clipboard-viewer",
+	"type": "command",
+	"action": "get_history",
+	"request_id": "req-42",
+	"payload": {}
+}
+```
+
+Example direct response (to the same client connection):
+
+```json
+{
+	"src": "nsd.server",
+	"type": "response",
+	"action": "get_history",
+	"request_id": "req-42",
+	"payload": {
+		"items": ["foo", "bar"],
+		"count": 2
+	}
+}
+```
 
 ## Generic Python IPC Example (socket + json only)
 
@@ -185,6 +220,19 @@ Hot-corner relay command example:
 ```bash
 python3 tools/nsd-send/nsd-send.py --type command --action hotcorner.trigger --payload '{"corner":"top_left","name":"TopLeft","command":"notify-send hotcorner triggered"}'
 ```
+
+Clipboard commands:
+
+```bash
+python3 tools/nsd-send/nsd-send.py --type command --action get_history
+python3 tools/nsd-send/nsd-send.py --type command --action clear
+```
+
+Clipboard plugin behavior:
+- `nsd` keeps an in-memory clipboard history (newest first).
+- history size is limited by `[clipboard].max_items` (for example `50`).
+- viewers can request history via `get_history` / `clipboard.get_history`.
+- clearing is supported via `clear` / `clipboard.clear`.
 
 Send a broadcast with payload:
 

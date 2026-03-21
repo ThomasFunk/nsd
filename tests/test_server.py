@@ -140,3 +140,58 @@ async def test_process_message_ignores_unknown_command_handler():
     )
 
     assert True
+
+
+@pytest.mark.asyncio
+async def test_process_message_sends_response_for_request_id():
+    daemon = NightshadeDaemon(DummyConfig())
+    sender = FakeWriter()
+
+    def handler(payload):
+        return {"echo": payload.get("value")}
+
+    daemon.register_command_handler("clipboard.get_history", handler)
+
+    await daemon.process_message(
+        {
+            "type": "command",
+            "action": "clipboard.get_history",
+            "request_id": "req-1",
+            "payload": {"value": 123},
+        },
+        sender,
+    )
+
+    assert len(sender.writes) == 1
+    response = json.loads(sender.writes[0].decode().strip())
+    assert response["type"] == "response"
+    assert response["action"] == "clipboard.get_history"
+    assert response["request_id"] == "req-1"
+    assert response["payload"] == {"echo": 123}
+
+
+@pytest.mark.asyncio
+async def test_process_message_sends_response_for_expect_response_flag():
+    daemon = NightshadeDaemon(DummyConfig())
+    sender = FakeWriter()
+
+    async def handler(_payload):
+        return {"ok": True}
+
+    daemon.register_command_handler("get_history", handler)
+
+    await daemon.process_message(
+        {
+            "type": "command",
+            "action": "get_history",
+            "expect_response": True,
+            "payload": {},
+        },
+        sender,
+    )
+
+    assert len(sender.writes) == 1
+    response = json.loads(sender.writes[0].decode().strip())
+    assert response["type"] == "response"
+    assert response["action"] == "get_history"
+    assert response["payload"] == {"ok": True}

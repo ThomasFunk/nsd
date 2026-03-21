@@ -7,7 +7,14 @@ The format is based on Keep a Changelog.
 
 ### Added
 
-- No changes yet.
+- Clipboard plugin (`modules/clipboard.py`) with in-memory history, configurable limits,
+  and IPC command handlers (`get_history`, `clear`, plus `clipboard.*` aliases).
+- Unit tests for clipboard plugin (`tests/test_clipboard.py`).
+
+### Changed
+
+- `core/server.py` now supports direct command request-response replies to the sender
+  (`type="response"`) when `request_id` or `expect_response=true` is provided.
 
 ## [0.4.1] - 2026-03-21
 

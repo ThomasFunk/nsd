@@ -30,6 +30,7 @@ It is modular, communicates via JSON packets over Unix Domain Sockets, and is fu
     - [x] Implement an interface for remote control of labwc (close windows, switch workspaces).
     - [x] Monitor labwc status changes.
 - [x] Hot-corner relay: Receive signals from h-corners and execute configured commands.
+- [x] Clipboard history plugin: Persist recent clipboard entries in nsd and expose history via IPC commands.
 
 # Phase 4: Tools & Stabilization (Priority: Low)
 - [x] Unit tests: Add pytest-based tests for configuration, IPC server, plugin loader, and nsd entrypoint wiring.

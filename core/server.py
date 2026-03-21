@@ -74,6 +74,14 @@ class NightshadeDaemon:
             except Exception as exc:
                 log.warning("Broadcast to client failed: %s", exc)
 
+    async def send_to_client(self, writer: asyncio.StreamWriter, msg: dict[str, Any]) -> None:
+        """Send one JSON message to exactly one connected client."""
+        try:
+            writer.write(json.dumps(msg).encode() + b'\n')
+            await writer.drain()
+        except Exception as exc:
+            log.warning("Direct reply to client failed: %s", exc)
+
     async def process_message(self, msg: dict[str, Any], sender_writer: asyncio.StreamWriter) -> None:
         """Route incoming messages based on their `type` field."""
         msg_type = msg.get("type")
@@ -94,9 +102,24 @@ class NightshadeDaemon:
                 log.warning("No handler registered for action: %s", action)
                 return
             payload = msg.get("payload", {})
+            request_id = msg.get("request_id")
+            expects_response = bool(request_id is not None or msg.get("expect_response", False))
             result = handler(payload)
             if inspect.isawaitable(result):
-                await result
+                result = await result
+
+            if expects_response:
+                response_payload = result if isinstance(result, dict) else {"result": result}
+                await self.send_to_client(
+                    sender_writer,
+                    {
+                        "src": "nsd.server",
+                        "type": "response",
+                        "action": action,
+                        "request_id": request_id,
+                        "payload": response_payload,
+                    },
+                )
 
     async def run(self) -> None:
         """Start the Unix socket server and serve forever."""
