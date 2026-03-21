@@ -7,14 +7,22 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- No changes yet.
+
+## [0.4.2] - 2026-03-21
+
+### Added
+
 - Clipboard plugin (`modules/clipboard.py`) with in-memory history, configurable limits,
   and IPC command handlers (`get_history`, `clear`, plus `clipboard.*` aliases).
 - Unit tests for clipboard plugin (`tests/test_clipboard.py`).
+- `nsd.toml` and config defaults now include clipboard settings (`max_items`, `poll_interval`).
 
 ### Changed
 
 - `core/server.py` now supports direct command request-response replies to the sender
   (`type="response"`) when `request_id` or `expect_response=true` is provided.
+- `README.md` and `Roadmap.md` were updated to document clipboard history integration in Phase 3.
 
 ## [0.4.1] - 2026-03-21
 
