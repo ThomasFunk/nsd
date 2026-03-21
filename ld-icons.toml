@@ -1,0 +1,8 @@
+[appearance]
+icon_size = 48
+show_labels = true
+grid_spacing = 20
+
+[behavior]
+single_click = false
+show_mounted_drives = true # Hier greift die Info vom Daemon!

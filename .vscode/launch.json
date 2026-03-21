@@ -1,0 +1,52 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python nsd Debuggen (Auto Display)",
+
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "program": "${workspaceFolder}/nsd.py",
+            "args" : 
+            [
+                "-c",
+                "${workspaceFolder}/nsd.conf",
+                "-l",
+                "${workspaceFolder}/startlog.txt"
+            ],
+
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "redirectOutput": false,
+            "justMyCode": true,
+            "env": 
+            {
+                "WAYLAND_DEBUG": "1"
+            }
+        },
+        {
+            "name": "Python nsd Debuggen (WAYLAND_DISPLAY=wayland-1)",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "program": "${workspaceFolder}/nsd.py",
+            "args": [
+                "-c",
+                "${workspaceFolder}/nsd.conf",
+                "-l",
+                "${workspaceFolder}/startlog.txt"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "redirectOutput": false,
+            "justMyCode": true,
+            "env": {
+                "WAYLAND_DEBUG": "1"
+            }
+        }
+    ]
+}

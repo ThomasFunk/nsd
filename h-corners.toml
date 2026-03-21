@@ -1,0 +1,6 @@
+[top-left]
+command = "labwc --next-view"
+threshold = 10 # Pixel-Toleranz
+
+[bottom-right]
+command = "wbar"

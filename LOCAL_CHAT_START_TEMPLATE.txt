@@ -1,0 +1,42 @@
+Neuer Chat – Startkontext (nsd)
+===============================
+
+Bitte antworte auf Deutsch, kurz und umsetzungsorientiert.
+Arbeite proaktiv: Änderungen direkt im Workspace durchführen, nicht nur beschreiben.
+
+Projektkontext:
+- Repo: nsd
+- Kern-Dateien: nsd.py, tools/nsd-send/nsd-send.py
+- Ziel: einen leichtgewichtigen Daemon, der als Kommunikationszentrale, Hardware-Monitor 
+  (automatisches Mounten) und Brücke zwischen verschiedenen spezialisierten Desktop-Tools 
+  fungiert.
+
+Wichtige Arbeitsregeln:
+- Nur notwendige, fokussierte Änderungen; keine unnötigen Refactors.
+- Vor größeren Änderungen kurz sagen, was du änderst.
+- Nach Änderungen kurz zusammenfassen, was und wo geändert wurde.
+- Wenn etwas unklar ist: kurze, konkrete Rückfrage.
+
+Commit-/Metadatenregeln:
+- Wenn Commit Änderungen an .py Dateien enthalten:
+  - __date__ auf aktuelles Datum nachziehen.
+- Wenn Commit Änderungen an nsd.py oder tools/nsd-send/nsd-send.py enthält:
+  - __version__ (Patch-Stelle) nur erhöhen, wenn ich das explizit verlange.
+  - Kein Tagging automatisch.
+
+Aktuelle Prioritäten (bei Bedarf anpassen):
+- Phase 1: Core & Infrastruktur - siehe Roadmap.md
+
+Arbeitsmodus für diesen Chat:
+- Erst fragen, dann mit der Umsetzung starten.
+- Relevante Tests laufen lassen (mindestens den betroffenen Bereich).
+- Danach Ergebnis + mögliche nächste sinnvolle Aktion nennen.
+
+Kurzvorlage (5 Zeilen)
+======================
+
+Bitte antworte auf Deutsch und arbeite proaktiv direkt im Workspace.
+Nur fokussierte Änderungen, bestehendes Verhalten erhalten, keine unnötigen Refactors.
+Vor größeren Änderungen kurz ankündigen, danach kurz zusammenfassen (was/wo).
+Wenn nsd.py oder nsd-send.py geändert und committed wird: __date__ aktualisieren.
+__version__ (Patch) nur erhöhen, wenn ich es explizit sage; kein Tagging automatisch.
