@@ -3,13 +3,14 @@ Neuer Chat – Startkontext (nsd)
 
 Bitte antworte auf Deutsch, kurz und umsetzungsorientiert.
 Arbeite proaktiv: Änderungen direkt im Workspace durchführen, nicht nur beschreiben.
+Lese dir copilot-instructions.md durch.
 
 Projektkontext:
 - Repo: nsd
 - Kern-Dateien: nsd.py, tools/nsd-send/nsd-send.py
-- Ziel: einen leichtgewichtigen Daemon, der als Kommunikationszentrale, Hardware-Monitor 
+- Ziel: einen leichtgewichtiger Daemon, der als Kommunikationszentrale, Hardware-Monitor 
   (automatisches Mounten) und Brücke zwischen verschiedenen spezialisierten Desktop-Tools 
-  fungiert.
+  fungiert. Die Basis wurde zusammen mit Gemini erstellt. Funktion noch nicht getestet.
 
 Wichtige Arbeitsregeln:
 - Nur notwendige, fokussierte Änderungen; keine unnötigen Refactors.
