@@ -2,6 +2,8 @@ __author__ = 'Thomas Funk'
 __coauthors__ = 'Github Copilot & Gemini'
 __date__ = "2026/03/21"
 
+"""Async Unix Domain Socket server used by nsd for JSON IPC."""
+
 import asyncio
 import json
 import logging
@@ -11,12 +13,16 @@ from typing import Any
 log = logging.getLogger("nsd.server")
 
 class NightshadeDaemon:
+    """Handle IPC client connections, message routing, and broadcasting."""
+
     def __init__(self, config: Any):
+        """Initialize daemon state from the provided configuration object."""
         self.config = config
         self.clients: set[asyncio.StreamWriter] = set()
         self.socket_path = Path(self.config.get("global", "socket_path") or "/tmp/nsd.sock")
 
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        """Read messages from a client until disconnect and process them."""
         self.clients.add(writer)
         log.info("New connection")
 
@@ -30,7 +36,7 @@ class NightshadeDaemon:
                     message = json.loads(data.decode())
                     log.debug("Message received: %s", message)
                     
-                    # Logik-Verteilung
+                    # Route and process the parsed message.
                     await self.process_message(message, writer)
                     
                 except json.JSONDecodeError:
@@ -45,6 +51,12 @@ class NightshadeDaemon:
             await writer.wait_closed()
 
     async def broadcast(self, msg: dict[str, Any], exclude: asyncio.StreamWriter | None = None) -> None:
+        """Send one JSON message to all connected clients.
+
+        Args:
+            msg: JSON-serializable message dictionary.
+            exclude: Optional client to skip (typically the sender).
+        """
         message_bytes = json.dumps(msg).encode() + b'\n'
         for client in list(self.clients):
             if exclude is not None and client == exclude:
@@ -56,21 +68,22 @@ class NightshadeDaemon:
                 log.warning("Broadcast to client failed: %s", exc)
 
     async def process_message(self, msg: dict[str, Any], sender_writer: asyncio.StreamWriter) -> None:
-        """Hier passiert die Magie: Routing & Aktionen"""
+        """Route incoming messages based on their `type` field."""
         msg_type = msg.get("type")
         
-        # Beispiel: System-weite Benachrichtigung (Broadcast)
+        # Forward broadcast messages to all clients except the sender.
         if msg_type == "broadcast":
             await self.broadcast(msg, exclude=sender_writer)
         
-        # Beispiel: Internes Kommando für den Daemon (z.B. Mount)
+        # Handle daemon-internal commands.
         elif msg_type == "command":
             action = msg.get("action")
             log.info("Executing action: %s", action)
-            # Hier käme der Aufruf für udisks2 / mounting hin
+            # Future command handlers (e.g. mount operations) go here.
 
     async def run(self) -> None:
-        # Socket aufräumen, falls er noch existiert
+        """Start the Unix socket server and serve forever."""
+        # Remove stale socket file from previous daemon runs.
         if self.socket_path.exists():
             self.socket_path.unlink()
 

@@ -1,32 +1,38 @@
-# nsd
+# nsd (Nightshade Daemon)
 
+`nsd` is the central service hub for the **labwc-Nightshade** desktop environment.
+It provides modular background services and IPC communication via **Unix Domain Sockets** using **JSON packets**.
 
-Currently it's a work in progress and will change frequently.
+## Status
 
-## Features
+The project is under active development.
+Phase 1 (Core & Infrastructure) is implemented:
+- Config manager with TOML + defaults
+- Async Unix socket IPC server
+- Dynamic plugin loader
+- Centralized logging
 
-## Installation
+See [Roadmap.md](Roadmap.md) for details.
 
-### 1) System dependencies
-You need at least:
+## Core Architecture
+
+- **Entry point:** `nsd.py`
+- **Core components:** `core/config.py`, `core/server.py`, `core/plugin_loader.py`
+- **Plugins:** `modules/` (all plugins must inherit from `modules/base.py::BasePlugin`)
+- **IPC transport:** Unix Domain Socket (default: `/tmp/nsd.sock`)
+
+## Requirements
+
 - Python 3.11+
 - `venv` + `pip`
+- Linux user session DBus (for notifications plugin)
+- `udisksctl` (for automount flows)
 
+Python dependencies:
+- `pyudev`
+- `dbus-next`
 
-Examples (optional):
-
-```bash
-# Debian/Ubuntu
-sudo apt install python3 python3-venv python3-pip
-
-# Arch
-sudo pacman -S python python-pip
-
-# Fedora
-sudo dnf install python3 python3-pip
-```
-
-### 2) Virtual environment and Python packages
+## Installation
 
 ```bash
 cd ~/workset/nsd
@@ -36,44 +42,81 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4) Run
+## Run
+
+Normal mode:
 
 ```bash
 ./venv/bin/python nsd.py
 ```
 
-Optional with detailed logs:
+Debug mode:
 
 ```bash
 ./venv/bin/python nsd.py --debug
 ```
 
-Important config options in `nsd.toml`:
+## Configuration
 
-## Development
+Default config file name: `nsd.toml`
 
-Local development workflow:
+Resolution order:
+1. Workspace-local config: `<workspace>/nsd.toml`
+2. XDG config: `~/.config/lns/nsd.toml` (or `$XDG_CONFIG_HOME/lns/nsd.toml`)
 
-```bash
-cd ~/workset/nsd
-source venv/bin/activate
-pip install -r requirements.txt
-python nsd.py --debug
+Important keys:
+- `[global].socket_path`
+- `[global].log_level`
+- `[modules].*`
+- `[automount].blacklist`
+
+Example config is provided in `nsd.toml`.
+
+## IPC JSON Message Format
+
+All messages should follow this structure:
+
+```json
+{
+	"src": "plugin-or-client",
+	"type": "broadcast | command | event",
+	"action": "action_name",
+	"payload": {
+		"key": "value"
+	}
+}
 ```
 
-Useful checks:
+## CLI Test Tool (`nsd-send`)
+
+Path: `tools/nsd-send/nsd-send.py`
+
+Send a command:
 
 ```bash
-python -m py_compile nsd.py
-python -c "import pywayland; print('deps ok')"
+python3 tools/nsd-send/nsd-send.py --action reload
 ```
 
-## Troubleshooting
-
-
-## Quick Check
+Send a broadcast with payload:
 
 ```bash
-./venv/bin/python -V
-./venv/bin/python -c "import pywayland; print('ok')"
+python3 tools/nsd-send/nsd-send.py --type broadcast --action notify --payload '{"title":"Test","msg":"Hello from shell"}'
 ```
+
+Send raw JSON:
+
+```bash
+python3 tools/nsd-send/nsd-send.py --raw '{"src":"manual","type":"command","action":"reload","payload":{}}'
+```
+
+## Development Notes
+
+Quick syntax checks:
+
+```bash
+./venv/bin/python -m py_compile nsd.py core/*.py modules/*.py tools/nsd-send/nsd-send.py
+```
+
+Known current state:
+- Automount and notifications are available as plugins, but still evolving.
+- No GUI code is included in the daemon itself.

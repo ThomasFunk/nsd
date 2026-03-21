@@ -2,22 +2,28 @@ __author__ = 'Thomas Funk'
 __coauthors__ = 'Github Copilot & Gemini'
 __date__ = "2026/03/21"
 
+"""DBus notification bridge plugin for nsd."""
+
 import asyncio
 from modules.base import BasePlugin
 from dbus_next.aio import MessageBus
-from dbus_next.service import ServiceInterface, method, dbus_property
+from dbus_next.service import ServiceInterface, method
 from dbus_next import BusType
 
 class NotificationService(ServiceInterface):
+    """Expose org.freedesktop.Notifications and forward events to IPC."""
+
     def __init__(self, name, send_ipc_func):
+        """Store IPC callback used to broadcast notification events."""
         super().__init__(name)
         self.send_ipc = send_ipc_func
 
     @method()
     async def Notify(self, app_name: 's', replaces_id: 'u', app_icon: 's', 
                      summary: 's', body: 's', actions: 'as', hints: 'a{sv}', expire_timeout: 'i') -> 'u':
+        """Translate DBus notification calls into nsd JSON broadcasts."""
         
-        # Die DBus-Nachricht in unser LNS-JSON Format umwandeln
+        # Convert the DBus payload into the nsd JSON event format.
         msg = {
             "src": "nsd.notifications",
             "type": "broadcast",
@@ -31,13 +37,17 @@ class NotificationService(ServiceInterface):
             }
         }
         
-        # Per IPC an alle (z.B. SimpleWx UI) senden
+        # Broadcast to all connected IPC clients (e.g. UI components).
         asyncio.create_task(self.send_ipc(msg))
         
-        return 42 # Eine ID für die Notification zurückgeben
+        # Return a static notification ID for now.
+        return 42
 
 class NotificationsPlugin(BasePlugin):
-    async def run(self):
+    """Register the DBus notification service and keep it running."""
+
+    async def run(self) -> None:
+        """Connect to session bus, export interface, and stay alive."""
         bus = await MessageBus(bus_type=BusType.SESSION).connect()
         interface = NotificationService('org.freedesktop.Notifications', self.send_ipc)
         bus.export('/org/freedesktop/Notifications', interface)
@@ -45,6 +55,6 @@ class NotificationsPlugin(BasePlugin):
         await bus.request_name('org.freedesktop.Notifications')
         self.log.info("DBus interface registered: org.freedesktop.Notifications")
         
-        # Plugin am Leben halten
+        # Keep plugin task alive.
         while True:
             await asyncio.sleep(3600)
