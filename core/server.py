@@ -21,12 +21,45 @@ class NightshadeDaemon:
         self.config = config
         self.clients: set[asyncio.StreamWriter] = set()
         self.command_handlers: dict[str, Any] = {}
+        self.event_handlers: dict[str, list[Any]] = {}
         self.socket_path = Path(self.config.get("global", "socket_path") or "/tmp/nsd.sock")
 
     def register_command_handler(self, action: str, handler: Any) -> None:
         """Register one IPC command handler for a specific action string."""
         self.command_handlers[action] = handler
         log.info("Registered command handler: %s", action)
+
+    def register_event_handler(self, event_key: str, handler: Any) -> None:
+        """Register a handler for internal event dispatch.
+
+        The key format is `<src>:<action>`, for example
+        `nsd.menu_watcher:apps_changed`.
+        """
+        self.event_handlers.setdefault(event_key, []).append(handler)
+        log.info("Registered event handler: %s", event_key)
+
+    async def dispatch_internal_event(self, msg: dict[str, Any]) -> None:
+        """Dispatch one broadcast/event message to matching internal handlers."""
+        src = msg.get("src")
+        action = msg.get("action")
+        if not src or not action:
+            return
+
+        # Build canonical lookup key used during handler registration.
+        event_key = f"{src}:{action}"
+        handlers = list(self.event_handlers.get(event_key, []))
+        if not handlers:
+            return
+
+        payload = msg.get("payload", {})
+        for handler in handlers:
+            try:
+                # Support both sync and async plugin handlers.
+                result = handler(payload)
+                if inspect.isawaitable(result):
+                    await result
+            except Exception as exc:
+                log.error("Internal event handler failed for %s: %s", event_key, exc)
 
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """Read messages from a client until disconnect and process them."""
@@ -74,6 +107,9 @@ class NightshadeDaemon:
             except Exception as exc:
                 log.warning("Broadcast to client failed: %s", exc)
 
+        # Also fan out to in-process plugin subscribers.
+        await self.dispatch_internal_event(msg)
+
     async def send_to_client(self, writer: asyncio.StreamWriter, msg: dict[str, Any]) -> None:
         """Send one JSON message to exactly one connected client."""
         try:
@@ -120,6 +156,9 @@ class NightshadeDaemon:
                         "payload": response_payload,
                     },
                 )
+
+        elif msg_type == "event":
+            await self.dispatch_internal_event(msg)
 
     async def run(self) -> None:
         """Start the Unix socket server and serve forever."""

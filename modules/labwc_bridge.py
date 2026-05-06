@@ -31,6 +31,8 @@ class LabwcBridgePlugin(BasePlugin):
         """Register IPC actions that control labwc."""
         daemon.register_command_handler("labwc.close_window", self.handle_close_window)
         daemon.register_command_handler("labwc.switch_workspace", self.handle_switch_workspace)
+        # React to menu watcher updates so labwc can rebuild app menu entries.
+        daemon.register_event_handler("nsd.menu_watcher:apps_changed", self.handle_apps_changed)
 
     def _run_command(self, command: str) -> tuple[int, str, str]:
         args = shlex.split(command)
@@ -122,3 +124,18 @@ class LabwcBridgePlugin(BasePlugin):
         while True:
             await self._poll_status_once()
             await asyncio.sleep(self._poll_interval)
+
+    async def handle_apps_changed(self, payload: dict[str, Any]) -> None:
+        """Handle menu watcher updates by triggering a labwc reconfigure.
+
+        Args:
+            payload: Event payload from `nsd.menu_watcher:apps_changed`.
+                It is currently not required for reconfigure execution, but
+                accepted for future compatibility.
+        """
+        self.log.info("Menu watcher reported changes, running labwc reconfigure")
+        # Call the existing execution/broadcast helper for consistent results.
+        await self._execute_and_broadcast_result(
+            "labwc.reconfigure",
+            "labwc --reconfigure",
+        )

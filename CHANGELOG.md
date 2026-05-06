@@ -7,7 +7,22 @@ The format is based on Keep a Changelog.
 
 ### Added
 
-- No changes yet.
+- Internal daemon event handler registry (`register_event_handler`) with
+  plugin-to-plugin dispatch for matching `<src>:<action>` messages.
+- Optional `wayland`-marked smoke test for real `labwc --reconfigure`
+  execution (`tests/test_labwc_bridge.py`) with safe auto-skip when
+  Wayland/labwc is not available.
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`) with default unit
+  tests and an optional manual self-hosted Wayland smoke job.
+- CI runner setup guide for Wayland smoke execution (`.github/README-ci.md`).
+- CI runner guide now includes a troubleshooting section for common Wayland
+  self-hosted runner issues (`WAYLAND_DISPLAY`, `XDG_RUNTIME_DIR`, PATH labels).
+
+### Changed
+
+- `core/server.py` now dispatches internal handlers for `broadcast` and `event`
+  messages in addition to client fan-out, enabling menu watcher to trigger
+  labwc reconfigure without external loopback clients.
 
 ## [0.4.3] - 2026-03-22
 

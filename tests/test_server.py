@@ -195,3 +195,49 @@ async def test_process_message_sends_response_for_expect_response_flag():
     assert response["type"] == "response"
     assert response["action"] == "get_history"
     assert response["payload"] == {"ok": True}
+
+
+@pytest.mark.asyncio
+async def test_broadcast_dispatches_internal_event_handler():
+    daemon = NightshadeDaemon(DummyConfig())
+    payloads = []
+
+    async def handler(payload):
+        payloads.append(payload)
+
+    daemon.register_event_handler("nsd.menu_watcher:apps_changed", handler)
+
+    await daemon.broadcast(
+        {
+            "src": "nsd.menu_watcher",
+            "type": "broadcast",
+            "action": "apps_changed",
+            "payload": {"count": 3},
+        }
+    )
+
+    assert payloads == [{"count": 3}]
+
+
+@pytest.mark.asyncio
+async def test_process_message_routes_event_to_internal_handlers():
+    daemon = NightshadeDaemon(DummyConfig())
+    sender = FakeWriter()
+    payloads = []
+
+    def handler(payload):
+        payloads.append(payload)
+
+    daemon.register_event_handler("manual:test", handler)
+
+    await daemon.process_message(
+        {
+            "src": "manual",
+            "type": "event",
+            "action": "test",
+            "payload": {"ok": True},
+        },
+        sender,
+    )
+
+    assert payloads == [{"ok": True}]

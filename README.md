@@ -26,6 +26,8 @@ See [Roadmap.md](Roadmap.md) for details.
 - Clients connect to the socket.
 - Clients can send commands/events to `nsd`.
 - `nsd` broadcasts messages to connected clients.
+- Plugins can subscribe to internal daemon events via `<src>:<action>` keys
+	(for example `nsd.menu_watcher:apps_changed`).
 
 ## Requirements
 
@@ -269,6 +271,19 @@ Run unit tests:
 ./venv/bin/pip install -r requirements-dev.txt
 ./venv/bin/python -m pytest -q
 ```
+
+Optional Wayland smoke test (requires active Wayland session and `labwc` in `PATH`):
+
+```bash
+./venv/bin/python -m pytest -q -m wayland
+```
+
+CI setup:
+- GitHub Actions workflow: `.github/workflows/ci.yml`
+- Default job runs full test suite on `ubuntu-latest`.
+- Optional Wayland smoke job is manual (`workflow_dispatch` + `run_wayland=true`) and
+	expects a self-hosted runner labeled `linux`, `wayland`.
+- Runner setup details: `.github/README-ci.md`
 
 ## Polkit Integration (Automount)
 

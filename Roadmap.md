@@ -31,6 +31,8 @@ It is modular, communicates via JSON packets over Unix Domain Sockets, and is fu
     - [x] Monitor labwc status changes.
 - [x] Hot-corner relay: Receive signals from h-corners and execute configured commands.
 - [x] Clipboard history plugin: Persist recent clipboard entries in nsd and expose history via IPC commands.
+- [x] Menu watcher plugin: Watch `.desktop` paths with debounce and broadcast `apps_changed` updates.
+- [x] Internal plugin event routing: Dispatch `<src>:<action>` events in-process so plugins can react without client loopback.
 
 # Phase 4: Tools & Stabilization (Priority: Low)
 - [x] Unit tests: Add pytest-based tests for configuration, IPC server, plugin loader, and nsd entrypoint wiring.
