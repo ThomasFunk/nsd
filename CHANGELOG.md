@@ -26,6 +26,9 @@ The format is based on Keep a Changelog.
 - `.github/workflows/ci.yml`: `wayland-smoke` now uses runner-local `python3`
   instead of `actions/setup-python` to avoid missing-version errors on
   self-hosted Debian 13 runners.
+- `.github/workflows/ci.yml`: `wayland-smoke` now creates and uses `.venv-ci`
+  for dependency installation and test execution to avoid PEP 668
+  externally-managed-environment failures.
 
 ## [0.4.3] - 2026-03-22
 

@@ -25,6 +25,10 @@ Note: the `wayland-smoke` job intentionally uses `python3` from the runner
 system instead of `actions/setup-python`. This avoids platform/image mismatch
 issues on self-hosted distributions (for example Debian 13).
 
+To avoid PEP 668 "externally managed environment" errors on Debian-based
+systems, the job creates a local virtual environment (`.venv-ci`) and installs
+dependencies inside it.
+
 Recommended package check:
 
 ```bash
@@ -62,6 +66,10 @@ to the active Wayland session environment (`WAYLAND_DISPLAY`, and if needed `XDG
 - Symptom: workflow stays pending on `wayland-smoke`
   - Cause: no self-hosted runner matches labels `self-hosted`, `linux`, `wayland`.
   - Fix: add the `wayland` label to the intended runner in repository settings.
+
+- Symptom: install step fails with "externally-managed-environment"
+  - Cause: Debian/Ubuntu system Python blocks global `pip` installs (PEP 668).
+  - Fix: use the workflow's venv-based install (`.venv-ci/bin/python -m pip ...`).
 
 ## Manual workflow trigger
 

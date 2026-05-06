@@ -45,10 +45,14 @@ jobs:
           python3 --version
           python3 -m pip --version
 
+      - name: Create virtual environment
+        run: |
+          python3 -m venv .venv-ci
+          .venv-ci/bin/python -m pip install --upgrade pip
+
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt -r requirements-dev.txt
+          .venv-ci/bin/python -m pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Run wayland-marked tests
-        run: python3 -m pytest -q -m wayland
+        run: .venv-ci/bin/python -m pytest -q -m wayland
