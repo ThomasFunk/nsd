@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_wayland:
+        description: "Run optional Wayland smoke tests on a self-hosted runner"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run test suite
+        run: python -m pytest -q
+
+  wayland-smoke:
+    name: Wayland smoke tests
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_wayland }}
+    runs-on: [self-hosted, linux, wayland]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run wayland-marked tests
+        run: python -m pytest -q -m wayland
