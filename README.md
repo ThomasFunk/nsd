@@ -1,5 +1,7 @@
 # nsd (Nightshade Daemon)
 
+[![CI](https://github.com/ThomasFunk/nsd/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ThomasFunk/nsd/actions/workflows/ci.yml)
+
 `nsd` is the central communication hub (server) for the **labwc-Nightshade** desktop environment.
 It coordinates plugins and external clients over one local IPC endpoint, so UI tools and helper daemons
 can exchange events and commands through a single message bus.
