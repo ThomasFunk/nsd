@@ -23,6 +23,9 @@ The format is based on Keep a Changelog.
 - `core/server.py` now dispatches internal handlers for `broadcast` and `event`
   messages in addition to client fan-out, enabling menu watcher to trigger
   labwc reconfigure without external loopback clients.
+- `.github/workflows/ci.yml`: `wayland-smoke` now uses runner-local `python3`
+  instead of `actions/setup-python` to avoid missing-version errors on
+  self-hosted Debian 13 runners.
 
 ## [0.4.3] - 2026-03-22
 

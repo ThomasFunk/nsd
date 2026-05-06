@@ -21,6 +21,10 @@ Install on the runner host:
 - `labwc` available in `PATH`
 - A working Wayland session for the runner user
 
+Note: the `wayland-smoke` job intentionally uses `python3` from the runner
+system instead of `actions/setup-python`. This avoids platform/image mismatch
+issues on self-hosted distributions (for example Debian 13).
+
 Recommended package check:
 
 ```bash
