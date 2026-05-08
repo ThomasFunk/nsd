@@ -9,10 +9,22 @@ import logging
 from typing import Any, Callable, Coroutine
 
 class BasePlugin(abc.ABC):
-    """Shared base class for all daemon plugins."""
+    """Base class for all NSD daemon plugins.
+
+    Provides shared dependencies such as configuration access, IPC send
+    callback, and per-plugin logger initialization.
+    """
 
     def __init__(self, config: Any, send_ipc_func: Callable[..., Coroutine]) -> None:
-        """Store shared dependencies and initialize plugin logger."""
+        """Initialize shared plugin dependencies.
+
+        Parameters
+        ----------
+        config : Any
+            Configuration provider used by plugin implementations.
+        send_ipc_func : Callable[..., Coroutine]
+            Async callable used to publish IPC messages.
+        """
         self.config = config
         self.send_ipc = send_ipc_func
         self.name = self.__class__.__name__
@@ -20,5 +32,14 @@ class BasePlugin(abc.ABC):
 
     @abc.abstractmethod
     async def run(self) -> None:
-        """Main plugin loop. Must be overridden by subclasses."""
+        """Run the plugin main loop.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Must be implemented by subclasses.
+        """
         pass

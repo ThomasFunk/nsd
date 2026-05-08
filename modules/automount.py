@@ -18,42 +18,91 @@ MOUNTABLE_FS_TYPES = {
 
 
 class AutomountPlugin(BasePlugin):
-    """Monitor udev events and mount/unmount partitions automatically."""
+    """Automount plugin for block-device events.
+
+    Monitors udev partition add/remove events, mounts supported filesystems
+    via ``udisksctl``, and emits IPC broadcasts for mount state changes.
+    """
 
     def __init__(self, config: Any, send_ipc_func: Any) -> None:
-        """Initialize with an empty mount registry."""
+        """Initialize plugin state.
+
+        Parameters
+        ----------
+        config : Any
+            Configuration provider passed by the daemon.
+        send_ipc_func : Any
+            Async callback used to send IPC messages.
+        """
         super().__init__(config, send_ipc_func)
         # Maps dev_node -> {"mount_point": str, "label": str, "fs_type": str}
         self._mounted: dict[str, dict[str, str]] = {}
         self._loop: asyncio.AbstractEventLoop | None = None
 
     async def run(self) -> None:
-        """Capture the running event loop and start device monitoring in a worker thread."""
+        """Start monitoring for block-device events.
+
+        Captures the current asyncio event loop and runs the blocking udev
+        polling loop in a worker thread.
+
+        Returns
+        -------
+        None
+        """
         # Store the loop reference before entering the thread so _ipc() can use it safely.
         self._loop = asyncio.get_running_loop()
         self.log.info("Starting device monitoring")
         # Run pyudev polling in a separate thread because it is blocking.
         await asyncio.to_thread(self._monitor_loop)
 
-    # ------------------------------------------------------------------ helpers
+    # helpers ------------------------------------------------------------------
 
     def _ipc(self, msg: dict[str, Any]) -> None:
-        """Schedule an IPC send from a non-async thread onto the event loop."""
+        """Schedule an IPC send from a non-async thread.
+
+        Parameters
+        ----------
+        msg : dict[str, Any]
+            IPC message payload to send.
+
+        Returns
+        -------
+        None
+        """
         if self._loop:
             asyncio.run_coroutine_threadsafe(self.send_ipc(msg), self._loop)
 
     def _device_info(self, device: pyudev.Device) -> dict[str, str]:
-        """Extract label, UUID, and filesystem type from a udev device."""
+        """Extract common filesystem metadata from a udev device.
+
+        Parameters
+        ----------
+        device : pyudev.Device
+            Udev device object.
+
+        Returns
+        -------
+        dict[str, str]
+            Dictionary with ``label``, ``uuid``, and ``fs_type`` keys.
+        """
         return {
             "label":   device.get("ID_FS_LABEL") or "",
             "uuid":    device.get("ID_FS_UUID") or "",
             "fs_type": device.get("ID_FS_TYPE") or "",
         }
 
-    # ------------------------------------------------------------------ monitor
+    # monitor ------------------------------------------------------------------
 
     def _monitor_loop(self) -> None:
-        """Blocking udev event loop for partition add/remove events."""
+        """Run the blocking udev monitor loop.
+
+        Listens for partition add/remove events and dispatches them to
+        mount/unmount handlers.
+
+        Returns
+        -------
+        None
+        """
         context = pyudev.Context()
         monitor = pyudev.Monitor.from_netlink(context)
         monitor.filter_by(subsystem="block", device_type="partition")
@@ -67,10 +116,25 @@ class AutomountPlugin(BasePlugin):
             elif device.action == "remove":
                 self._handle_unmount(device)
 
-    # ------------------------------------------------------------------ handlers
+    # handlers -----------------------------------------------------------------
 
     def _handle_mount(self, device: pyudev.Device) -> None:
-        """Mount a newly added partition and broadcast a mounted event."""
+        """Handle udev add event by mounting and broadcasting state.
+
+        Parameters
+        ----------
+        device : pyudev.Device
+            Newly detected block partition device.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        subprocess.CalledProcessError
+            Internally caught and logged if ``udisksctl mount`` fails.
+        """
         dev_node = device.device_node
         info = self._device_info(device)
 
@@ -121,7 +185,17 @@ class AutomountPlugin(BasePlugin):
             self.log.error("Failed to mount %s: %s", dev_node, e.stderr.strip())
 
     def _handle_unmount(self, device: pyudev.Device) -> None:
-        """Broadcast an unmounted event and clean up the mount registry."""
+        """Handle udev remove event and broadcast unmount state.
+
+        Parameters
+        ----------
+        device : pyudev.Device
+            Removed block partition device.
+
+        Returns
+        -------
+        None
+        """
         dev_node = device.device_node
         info = self._mounted.pop(dev_node, {})
         mount_point = info.get("mount_point", "")

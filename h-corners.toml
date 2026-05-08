@@ -1,6 +1,6 @@
 [top-left]
 command = "labwc --next-view"
-threshold = 10 # Pixel-Toleranz
+threshold = 10 # Pixel-Tolerance for triggering the corner
 
 [bottom-right]
 command = "wbar"

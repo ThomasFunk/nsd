@@ -5,4 +5,4 @@ grid_spacing = 20
 
 [behavior]
 single_click = false
-show_mounted_drives = true # Hier greift die Info vom Daemon!
+show_mounted_drives = true # Uses mount status updates provided by the daemon.

@@ -19,15 +19,31 @@ from modules.base import BasePlugin
 
 
 class MenuEventHandler(FileSystemEventHandler):
-    """Watchdog event adapter that filters for `.desktop` file changes."""
+    """Watchdog adapter filtering for ``.desktop`` file changes."""
 
     def __init__(self, callback):
-        """Store callback invoked when relevant file changes are detected."""
+        """Initialize event callback.
+
+        Parameters
+        ----------
+        callback : callable
+            Callback invoked when relevant desktop-file changes are detected.
+        """
         super().__init__()
         self.callback = callback
 
     def on_any_event(self, event):
-        """Handle any filesystem event and trigger callback for desktop files only."""
+        """Handle filesystem events and forward relevant ones.
+
+        Parameters
+        ----------
+        event : Any
+            Watchdog event object.
+
+        Returns
+        -------
+        None
+        """
         # Ignore directory-level and non-desktop events to reduce noise.
         if event.is_directory or not event.src_path.endswith('.desktop'):
             return
@@ -35,10 +51,22 @@ class MenuEventHandler(FileSystemEventHandler):
 
 
 class MenuWatcherPlugin(BasePlugin):
-    """Monitor application menu directories and notify clients about changes."""
+    """Monitor application menu directories.
+
+    Watches configured ``.desktop`` directories, debounces filesystem bursts,
+    and broadcasts ``apps_changed`` notifications to IPC clients.
+    """
 
     def __init__(self, config: Any, send_ipc_func: Any) -> None:
-        """Read watcher config, initialize paths, and prepare debounce state."""
+        """Initialize watcher configuration and runtime state.
+
+        Parameters
+        ----------
+        config : Any
+            Configuration provider.
+        send_ipc_func : Any
+            Async IPC send callback.
+        """
         super().__init__(config, send_ipc_func)
         watcher_cfg = self.config.get("menu_watcher") or {}
 
@@ -64,7 +92,22 @@ class MenuWatcherPlugin(BasePlugin):
 
     @staticmethod
     def _safe_float(value: Any, fallback: float, minimum: float = 0.0) -> float:
-        """Parse float config values safely with fallback and minimum clamping."""
+        """Parse and clamp float config values.
+
+        Parameters
+        ----------
+        value : Any
+            Input value to parse.
+        fallback : float
+            Value returned when parsing fails.
+        minimum : float, default=0.0
+            Lower bound for parsed result.
+
+        Returns
+        -------
+        float
+            Parsed and clamped float value.
+        """
         try:
             parsed = float(value)
         except (TypeError, ValueError):
@@ -72,26 +115,51 @@ class MenuWatcherPlugin(BasePlugin):
         return max(minimum, parsed)
 
     def register_handlers(self, daemon: Any) -> None:
-        """Register IPC command handlers for menu app listing queries."""
+        """Register IPC command handlers.
+
+        Parameters
+        ----------
+        daemon : Any
+            Daemon instance exposing ``register_command_handler``.
+
+        Returns
+        -------
+        None
+        """
         # Keep short + namespaced aliases for client compatibility.
         daemon.register_command_handler("get_apps", self.handle_get_apps)
         daemon.register_command_handler("menu.get_apps", self.handle_get_apps)
 
     def _trigger_reload(self) -> None:
-        """Thread-safe trigger entrypoint called from watchdog callback thread."""
+        """Trigger debounced reload from watchdog thread.
+
+        Returns
+        -------
+        None
+        """
         if self._loop is None:
             return
         # Forward to asyncio loop because watchdog callbacks are not in loop thread.
         self._loop.call_soon_threadsafe(self._schedule_debounce)
 
     def _schedule_debounce(self) -> None:
-        """Reset and schedule debounce task for coalesced update emission."""
+        """Reset and schedule debounce task.
+
+        Returns
+        -------
+        None
+        """
         if self._debounce_task and not self._debounce_task.done():
             self._debounce_task.cancel()
         self._debounce_task = self._loop.create_task(self._debounced_emit())
 
     async def _debounced_emit(self) -> None:
-        """Wait debounce window and then send one consolidated update signal."""
+        """Wait debounce window and emit consolidated update.
+
+        Returns
+        -------
+        None
+        """
         try:
             await asyncio.sleep(self.debounce_seconds)
         except asyncio.CancelledError:
@@ -99,7 +167,13 @@ class MenuWatcherPlugin(BasePlugin):
         await self._send_update_signal()
 
     def _collect_app_ids(self) -> list[str]:
-        """Collect sorted `.desktop` filenames from all configured watch paths."""
+        """Collect sorted ``.desktop`` filenames from configured paths.
+
+        Returns
+        -------
+        list[str]
+            Sorted list of desktop entry filenames.
+        """
         items = set()
         for path in self.paths:
             if not path.exists() or not path.is_dir():
@@ -109,7 +183,12 @@ class MenuWatcherPlugin(BasePlugin):
         return sorted(items)
 
     async def _send_update_signal(self) -> None:
-        """Broadcast app-change notification to IPC clients."""
+        """Broadcast app-change notification.
+
+        Returns
+        -------
+        None
+        """
         payload: dict[str, Any] = {"info": "XDG desktop files updated"}
         if self.include_app_list:
             # App scanning is filesystem-bound, so move it off the event loop.
@@ -125,12 +204,28 @@ class MenuWatcherPlugin(BasePlugin):
         self.log.info("Broadcast 'apps_changed' sent")
 
     async def handle_get_apps(self, _payload: dict[str, Any]) -> dict[str, Any]:
-        """Return current app ID list for command request-response clients."""
+        """Return current app ID list.
+
+        Parameters
+        ----------
+        _payload : dict[str, Any]
+            Unused request payload.
+
+        Returns
+        -------
+        dict[str, Any]
+            App list and count.
+        """
         apps = await asyncio.to_thread(self._collect_app_ids)
         return {"apps": apps, "count": len(apps)}
 
     async def run(self) -> None:
-        """Start watchdog observer and keep plugin alive until shutdown."""
+        """Start watchdog observer and keep plugin alive.
+
+        Returns
+        -------
+        None
+        """
         if Observer is None:
             self.log.error("watchdog dependency is missing; install 'watchdog' to enable MenuWatcherPlugin")
             while True:

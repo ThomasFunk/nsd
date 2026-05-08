@@ -14,9 +14,22 @@ from modules.base import BasePlugin
 
 
 class LabwcBridgePlugin(BasePlugin):
-    """Expose labwc control actions and publish status changes over nsd IPC."""
+    """Labwc control and status bridge.
+
+    Exposes IPC command handlers for common labwc actions and broadcasts status
+    changes detected via periodic polling.
+    """
 
     def __init__(self, config: Any, send_ipc_func: Any) -> None:
+        """Initialize labwc bridge settings.
+
+        Parameters
+        ----------
+        config : Any
+            Configuration provider.
+        send_ipc_func : Any
+            Async IPC send callback.
+        """
         super().__init__(config, send_ipc_func)
         bridge_cfg = self.config.get("labwc_bridge") or {}
         self._poll_interval = float(bridge_cfg.get("poll_interval", 1.0))
@@ -28,18 +41,52 @@ class LabwcBridgePlugin(BasePlugin):
         self._last_status_raw = ""
 
     def register_handlers(self, daemon: Any) -> None:
-        """Register IPC actions that control labwc."""
+        """Register IPC command and event handlers.
+
+        Parameters
+        ----------
+        daemon : Any
+            Daemon instance exposing registration methods.
+
+        Returns
+        -------
+        None
+        """
         daemon.register_command_handler("labwc.close_window", self.handle_close_window)
         daemon.register_command_handler("labwc.switch_workspace", self.handle_switch_workspace)
         # React to menu watcher updates so labwc can rebuild app menu entries.
         daemon.register_event_handler("nsd.menu_watcher:apps_changed", self.handle_apps_changed)
 
     def _run_command(self, command: str) -> tuple[int, str, str]:
+        """Execute command string and return process result.
+
+        Parameters
+        ----------
+        command : str
+            Command to execute.
+
+        Returns
+        -------
+        tuple[int, str, str]
+            ``(returncode, stdout, stderr)``.
+        """
         args = shlex.split(command)
         result = subprocess.run(args, capture_output=True, text=True)
         return result.returncode, result.stdout.strip(), result.stderr.strip()
 
     def _status_payload(self, raw: str) -> dict[str, Any]:
+        """Build structured status payload from raw status output.
+
+        Parameters
+        ----------
+        raw : str
+            Raw status command output.
+
+        Returns
+        -------
+        dict[str, Any]
+            Payload with raw text and optional parsed JSON.
+        """
         payload: dict[str, Any] = {"raw": raw}
         try:
             payload["data"] = json.loads(raw)
@@ -53,6 +100,21 @@ class LabwcBridgePlugin(BasePlugin):
         command: str,
         context: dict[str, Any] | None = None,
     ) -> None:
+        """Execute command and broadcast standardized result payload.
+
+        Parameters
+        ----------
+        action : str
+            Logical action name reported to clients.
+        command : str
+            Shell command to execute.
+        context : dict[str, Any] | None, default=None
+            Optional extra fields merged into result payload.
+
+        Returns
+        -------
+        None
+        """
         rc, stdout, stderr = await asyncio.to_thread(self._run_command, command)
         payload: dict[str, Any] = {
             "action": action,
@@ -73,9 +135,31 @@ class LabwcBridgePlugin(BasePlugin):
         )
 
     async def handle_close_window(self, payload: dict[str, Any]) -> None:
+        """Handle close-window command.
+
+        Parameters
+        ----------
+        payload : dict[str, Any]
+            Optional command context.
+
+        Returns
+        -------
+        None
+        """
         await self._execute_and_broadcast_result("labwc.close_window", self._close_cmd, payload or None)
 
     async def handle_switch_workspace(self, payload: dict[str, Any]) -> None:
+        """Handle workspace switch command.
+
+        Parameters
+        ----------
+        payload : dict[str, Any]
+            Command payload expected to include ``workspace``.
+
+        Returns
+        -------
+        None
+        """
         workspace = payload.get("workspace") if isinstance(payload, dict) else None
         if workspace in (None, ""):
             await self.send_ipc(
@@ -102,6 +186,12 @@ class LabwcBridgePlugin(BasePlugin):
         )
 
     async def _poll_status_once(self) -> None:
+        """Poll labwc status once and broadcast on change.
+
+        Returns
+        -------
+        None
+        """
         rc, stdout, stderr = await asyncio.to_thread(self._run_command, self._status_cmd)
         if rc != 0:
             self.log.debug("Status command failed: %s", stderr)
@@ -119,19 +209,28 @@ class LabwcBridgePlugin(BasePlugin):
         )
 
     async def run(self) -> None:
-        """Run periodic status polling loop."""
+        """Run periodic status polling loop.
+
+        Returns
+        -------
+        None
+        """
         self.log.info("Labwc bridge started")
         while True:
             await self._poll_status_once()
             await asyncio.sleep(self._poll_interval)
 
     async def handle_apps_changed(self, payload: dict[str, Any]) -> None:
-        """Handle menu watcher updates by triggering a labwc reconfigure.
+        """Handle menu change event by triggering labwc reconfigure.
 
-        Args:
-            payload: Event payload from `nsd.menu_watcher:apps_changed`.
-                It is currently not required for reconfigure execution, but
-                accepted for future compatibility.
+        Parameters
+        ----------
+        payload : dict[str, Any]
+            Event payload from ``nsd.menu_watcher:apps_changed``.
+
+        Returns
+        -------
+        None
         """
         self.log.info("Menu watcher reported changes, running labwc reconfigure")
         # Call the existing execution/broadcast helper for consistent results.

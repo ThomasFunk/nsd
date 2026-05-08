@@ -1,11 +1,11 @@
 [global]
 socket_path = "/tmp/nsd.sock"
 log_level = "info"
-# Falls der Daemon bestimmte Programme beim Starten mitziehen soll
+# If the daemon should launch specific programs on startup
 autostart = ["ld-icons", "h-corners"]
 
 [modules]
-# Welche internen Funktionen des Daemons sind aktiv?
+# Which internal daemon features are active?
 automount = true
 notifications = true
 labwc_bridge = true
@@ -14,14 +14,14 @@ clipboard = true
 menu_watcher = true
 
 [automount]
-# Regeln für das Einbinden von Medien
+# Rules for mounting media
 mount_path = "/media"
-auto_open_fm = false  # Soll nach dem Mounten ein Dateimanager öffnen?
-blacklist = ["/dev/sda1"] # Partitionen, die ignoriert werden sollen
+auto_open_fm = false  # Open a file manager after mounting?
+blacklist = ["/dev/sda1"] # Partitions that should be ignored
 
 [notifications]
-# Einstellungen für den Notification-Server
-timeout = 5000  # Millisekunden, bis ein Popup verschwindet
+# Notification server settings
+timeout = 5000  # Milliseconds until a popup disappears
 max_visible = 3
 position = "top-right"
 

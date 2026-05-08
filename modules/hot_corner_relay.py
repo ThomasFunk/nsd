@@ -12,23 +12,68 @@ from modules.base import BasePlugin
 
 
 class HotCornerRelayPlugin(BasePlugin):
-    """Execute relayed hot-corner commands received via nsd IPC."""
+    """Execute relayed hot-corner commands.
+
+    Receives ``hotcorner.trigger`` commands, runs the requested shell command,
+    and optionally broadcasts execution results.
+    """
 
     def __init__(self, config: Any, send_ipc_func: Any) -> None:
+        """Initialize relay settings.
+
+        Parameters
+        ----------
+        config : Any
+            Configuration provider.
+        send_ipc_func : Any
+            Async IPC send callback.
+        """
         super().__init__(config, send_ipc_func)
         relay_cfg = self.config.get("hot_corner_relay") or {}
         self._broadcast_results = bool(relay_cfg.get("result_broadcast", True))
 
     def register_handlers(self, daemon: Any) -> None:
-        """Register the hot-corner trigger command handler on the daemon."""
+        """Register daemon command handlers.
+
+        Parameters
+        ----------
+        daemon : Any
+            Daemon instance exposing ``register_command_handler``.
+
+        Returns
+        -------
+        None
+        """
         daemon.register_command_handler("hotcorner.trigger", self.handle_trigger)
 
     def _run_command(self, command: str) -> tuple[int, str, str]:
+        """Execute shell command and return result tuple.
+
+        Parameters
+        ----------
+        command : str
+            Shell command string.
+
+        Returns
+        -------
+        tuple[int, str, str]
+            ``(returncode, stdout, stderr)``.
+        """
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         return result.returncode, result.stdout.strip(), result.stderr.strip()
 
     async def handle_trigger(self, payload: dict[str, Any]) -> None:
-        """Execute the relayed shell command and optionally broadcast the result."""
+        """Handle ``hotcorner.trigger`` command payload.
+
+        Parameters
+        ----------
+        payload : dict[str, Any]
+            Trigger payload containing corner metadata and command string.
+
+        Returns
+        -------
+        None
+        """
         command = str((payload or {}).get("command") or "").strip()
         result_payload: dict[str, Any] = {
             "corner": (payload or {}).get("corner", ""),
@@ -67,7 +112,12 @@ class HotCornerRelayPlugin(BasePlugin):
             )
 
     async def run(self) -> None:
-        """Keep the plugin task alive after handler registration."""
+        """Keep plugin task alive.
+
+        Returns
+        -------
+        None
+        """
         self.log.info("Hot-corner relay active")
         while True:
             await asyncio.sleep(3600)

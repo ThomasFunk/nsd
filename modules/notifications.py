@@ -19,10 +19,18 @@ DBUS_A_SV = "a{sv}"
 DBUS_I = "i"
 
 class NotificationService(ServiceInterface):
-    """Expose org.freedesktop.Notifications and forward events to IPC."""
+    """DBus notification service forwarding events to NSD IPC."""
 
     def __init__(self, name, send_ipc_func):
-        """Store IPC callback used to broadcast notification events."""
+        """Initialize DBus service wrapper.
+
+        Parameters
+        ----------
+        name : str
+            DBus interface name.
+        send_ipc_func : callable
+            Async callback used to forward notifications to IPC.
+        """
         super().__init__(name)
         self.send_ipc = send_ipc_func
         self._next_notification_id = 1
@@ -35,7 +43,26 @@ class NotificationService(ServiceInterface):
         body: str,
         expire_timeout: int,
     ) -> dict:
-        """Build the standardized nsd IPC payload for one notification."""
+        """Build standardized NSD IPC payload for one notification.
+
+        Parameters
+        ----------
+        app_name : str
+            Application name.
+        app_icon : str
+            Application icon identifier/path.
+        summary : str
+            Notification title.
+        body : str
+            Notification message body.
+        expire_timeout : int
+            Expiration timeout in milliseconds.
+
+        Returns
+        -------
+        dict
+            IPC message dictionary.
+        """
         return {
             "src": "nsd.notifications",
             "type": "broadcast",
@@ -61,7 +88,32 @@ class NotificationService(ServiceInterface):
         hints: DBUS_A_SV,
         expire_timeout: DBUS_I,
     ) -> DBUS_U:
-        """Translate DBus notification calls into nsd JSON broadcasts."""
+        """Translate DBus ``Notify`` calls into NSD broadcasts.
+
+        Parameters
+        ----------
+        app_name : DBUS_S
+            Calling application name.
+        replaces_id : DBUS_U
+            Existing notification ID to replace, if any.
+        app_icon : DBUS_S
+            Application icon identifier/path.
+        summary : DBUS_S
+            Notification title.
+        body : DBUS_S
+            Notification body text.
+        actions : DBUS_AS
+            DBus actions array (currently unused).
+        hints : DBUS_A_SV
+            DBus hints map (currently unused).
+        expire_timeout : DBUS_I
+            Timeout in milliseconds.
+
+        Returns
+        -------
+        DBUS_U
+            Notification ID expected by DBus clients.
+        """
 
         # Convert the DBus payload into the nsd JSON event format.
         msg = self._build_ipc_message(app_name, app_icon, summary, body, expire_timeout)
@@ -77,10 +129,15 @@ class NotificationService(ServiceInterface):
         return notification_id
 
 class NotificationsPlugin(BasePlugin):
-    """Register the DBus notification service and keep it running."""
+    """Plugin that registers the DBus notification service."""
 
     async def run(self) -> None:
-        """Connect to session bus, export interface, and stay alive."""
+        """Connect session bus, export interface, and keep service alive.
+
+        Returns
+        -------
+        None
+        """
         bus = await MessageBus(bus_type=BusType.SESSION).connect()
         interface = NotificationService('org.freedesktop.Notifications', self.send_ipc)
         bus.export('/org/freedesktop/Notifications', interface)

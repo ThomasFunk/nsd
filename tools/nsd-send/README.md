@@ -1,27 +1,27 @@
-So testest du damit
-Sobald dein nsd.py läuft, kannst du in einem zweiten Terminal verschiedene Szenarien simulieren:
+How to test with it
+Once `nsd.py` is running, you can simulate different scenarios in a second terminal:
 
-A. Ein einfaches Kommando senden:
+A. Send a simple command:
 
 ```Bash
 python3 nsd-send.py --action reload
 ```
 
-B. Eine Benachrichtigung simulieren (Broadcast an alle Tools):
+B. Simulate a notification (broadcast to all tools):
 
 ```Bash
-python3 nsd-send.py --type broadcast --action notify --payload '{"title": "Test", "msg": "Hallo von der Konsole"}'
+python3 nsd-send.py --type broadcast --action notify --payload '{"title": "Test", "msg": "Hello from the console"}'
 ```
 
-C. Ein komplettes JSON-Paket (Raw):
+C. Send a full JSON packet (raw):
 
 ```Bash
 python3 nsd-send.py --raw '{"src": "manual", "type": "command", "action": "mount", "payload": {"dev": "/dev/sdb1"}}'
 ```
 
-3. Profi-Tipp für die Entwicklung
-Du kannst das Skript ausführbar machen und nach /usr/local/bin/nsd-send verlinken. 
-Dann kannst du von überall einfach nsd-send --action reload tippen.
+3. Pro tip for development
+You can make the script executable and symlink it to `/usr/local/bin/nsd-send`.
+Then you can run `nsd-send --action reload` from anywhere.
 
 ```Bash
 chmod +x nsd-send.py
@@ -33,5 +33,4 @@ Optional:
 sudo ln -s $(pwd)/nsd-send.py /usr/local/bin/nsd-send
 ```
 
-Damit steht dein Test-Setup! Du hast den Daemon, die Plugin-Struktur, das Automount-Modul, 
-die Copilot-Instructions und nun das CLI-Tool.
+That completes your test setup. You now have the daemon, plugin structure, automount module and the CLI tool.

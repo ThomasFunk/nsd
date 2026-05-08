@@ -36,6 +36,6 @@ It is modular, communicates via JSON packets over Unix Domain Sockets, and is fu
 
 # Phase 4: Tools & Stabilization (Priority: Low)
 - [x] Unit tests: Add pytest-based tests for configuration, IPC server, plugin loader, and nsd entrypoint wiring.
-- [ ] nsd-send CLI: Small Python tool to manually send JSON commands to the socket (for shell scripts).
+- [x] nsd-send CLI: Small Python tool to manually send JSON commands to the socket (for shell scripts).
 - [ ] Hot reload: Implement SIGHUP to reload TOML configuration without process restart.
-- [ ] Auto-discovery: Plugins should detect at runtime which other LNS tools (such as wbar) are currently active.
+- [ ] Auto-discovery: Plugins should detect at runtime which other tools (such as wbar) are currently active.

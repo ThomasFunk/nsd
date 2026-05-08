@@ -16,9 +16,22 @@ from modules.base import BasePlugin
 
 
 class ClipboardPlugin(BasePlugin):
-    """Maintain clipboard history and expose it over nsd IPC."""
+    """Clipboard history plugin.
+
+    Maintains an in-memory clipboard history and exposes query/clear handlers
+    over NSD IPC.
+    """
 
     def __init__(self, config: Any, send_ipc_func: Any) -> None:
+        """Initialize clipboard plugin state.
+
+        Parameters
+        ----------
+        config : Any
+            Configuration provider.
+        send_ipc_func : Any
+            Async IPC send callback.
+        """
         super().__init__(config, send_ipc_func)
         # Clipboard-specific config lives under [clipboard] in nsd.toml.
         clipboard_cfg = self.config.get("clipboard") or {}
@@ -31,6 +44,22 @@ class ClipboardPlugin(BasePlugin):
 
     @staticmethod
     def _safe_int(value: Any, fallback: int, minimum: int = 0) -> int:
+        """Parse an integer config value safely.
+
+        Parameters
+        ----------
+        value : Any
+            Input value to parse.
+        fallback : int
+            Value returned when parsing fails.
+        minimum : int, default=0
+            Lower bound for parsed result.
+
+        Returns
+        -------
+        int
+            Parsed and clamped integer.
+        """
         try:
             parsed = int(value)
         except (TypeError, ValueError):
@@ -39,6 +68,22 @@ class ClipboardPlugin(BasePlugin):
 
     @staticmethod
     def _safe_float(value: Any, fallback: float, minimum: float = 0.0) -> float:
+        """Parse a float config value safely.
+
+        Parameters
+        ----------
+        value : Any
+            Input value to parse.
+        fallback : float
+            Value returned when parsing fails.
+        minimum : float, default=0.0
+            Lower bound for parsed result.
+
+        Returns
+        -------
+        float
+            Parsed and clamped float.
+        """
         try:
             parsed = float(value)
         except (TypeError, ValueError):
@@ -46,7 +91,17 @@ class ClipboardPlugin(BasePlugin):
         return max(minimum, parsed)
 
     def register_handlers(self, daemon: Any) -> None:
-        """Register IPC commands used by clipboard UIs."""
+        """Register clipboard-related IPC command handlers.
+
+        Parameters
+        ----------
+        daemon : Any
+            Daemon instance exposing ``register_command_handler``.
+
+        Returns
+        -------
+        None
+        """
         # Keep short and namespaced aliases to ease migration of existing clients.
         daemon.register_command_handler("get_history", self.handle_get_history)
         daemon.register_command_handler("clipboard.get_history", self.handle_get_history)
@@ -54,16 +109,25 @@ class ClipboardPlugin(BasePlugin):
         daemon.register_command_handler("clipboard.clear", self.handle_clear_history)
 
     async def run(self) -> None:
-        """Run background polling loop for clipboard text changes."""
+        """Run clipboard polling loop.
+
+        Returns
+        -------
+        None
+        """
         self.log.info("Clipboard watcher started (poll_interval=%.2fs, max_items=%d)", self.poll_interval, self.max_items)
         while True:
             await self._check_clipboard()
             await asyncio.sleep(self.poll_interval)
 
     def _read_clipboard_text(self) -> str:
-        """Read current clipboard text using wl-paste.
+        """Read current clipboard text using ``wl-paste``.
 
-        Returns an empty string when clipboard is unavailable or non-text.
+        Returns
+        -------
+        str
+            Clipboard text, or an empty string if unavailable/non-text.
+
         """
         try:
             result = subprocess.run(
@@ -81,6 +145,12 @@ class ClipboardPlugin(BasePlugin):
             return ""
 
     async def _check_clipboard(self) -> None:
+        """Check clipboard for changes and broadcast updates.
+
+        Returns
+        -------
+        None
+        """
         # Run blocking wl-paste call in a thread to keep asyncio loop responsive.
         current_text = await asyncio.to_thread(self._read_clipboard_text)
         if not current_text:
@@ -106,14 +176,36 @@ class ClipboardPlugin(BasePlugin):
         )
 
     async def handle_get_history(self, _payload: dict[str, Any]) -> dict[str, Any]:
-        """Return current clipboard history for request-response clients."""
+        """Return current clipboard history.
+
+        Parameters
+        ----------
+        _payload : dict[str, Any]
+            Unused request payload.
+
+        Returns
+        -------
+        dict[str, Any]
+            History items and count.
+        """
         return {
             "items": list(self.history),
             "count": len(self.history),
         }
 
     async def handle_clear_history(self, _payload: dict[str, Any]) -> dict[str, Any]:
-        """Clear in-memory history and return the resulting state."""
+        """Clear in-memory history.
+
+        Parameters
+        ----------
+        _payload : dict[str, Any]
+            Unused request payload.
+
+        Returns
+        -------
+        dict[str, Any]
+            Resulting history state.
+        """
         # Explicit clear action enables one-click "wipe history" in UI tools.
         self.history = []
         return {"count": 0, "status": "cleared"}
