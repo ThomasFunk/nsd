@@ -13,7 +13,7 @@ def test_loads_xdg_config_when_local_missing(monkeypatch, tmp_path):
     xdg_home = tmp_path / "xdg"
     monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
 
-    xdg_config = xdg_home / "lns" / config_name
+    xdg_config = xdg_home / "nsd" / config_name
     xdg_config.parent.mkdir(parents=True, exist_ok=True)
     xdg_config.write_text('[global]\nsocket_path = "/tmp/from-xdg.sock"\n', encoding="utf-8")
 
@@ -30,7 +30,7 @@ def test_local_config_takes_precedence_over_xdg(monkeypatch, tmp_path):
 
     xdg_home = tmp_path / "xdg"
     monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
-    xdg_config = xdg_home / "lns" / config_name
+    xdg_config = xdg_home / "nsd" / config_name
     xdg_config.parent.mkdir(parents=True, exist_ok=True)
     xdg_config.write_text('[global]\nsocket_path = "/tmp/from-xdg.sock"\n', encoding="utf-8")
 
@@ -48,7 +48,7 @@ def test_invalid_toml_keeps_defaults(monkeypatch, tmp_path):
     xdg_home = tmp_path / "xdg"
     monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
 
-    xdg_config = xdg_home / "lns" / config_name
+    xdg_config = xdg_home / "nsd" / config_name
     xdg_config.parent.mkdir(parents=True, exist_ok=True)
     xdg_config.write_text('[global\nsocket_path = "/tmp/broken.sock"\n', encoding="utf-8")
 
@@ -63,7 +63,7 @@ def test_get_returns_section_or_single_value(monkeypatch, tmp_path):
     xdg_home = tmp_path / "xdg"
     monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
 
-    xdg_config = xdg_home / "lns" / config_name
+    xdg_config = xdg_home / "nsd" / config_name
     xdg_config.parent.mkdir(parents=True, exist_ok=True)
     xdg_config.write_text('[automount]\nmount_path = "/mnt/custom"\n', encoding="utf-8")
 
@@ -80,7 +80,7 @@ def test_loads_companion_tool_configs_from_same_xdg_directory(monkeypatch, tmp_p
     xdg_home = tmp_path / "xdg"
     monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
 
-    config_dir = xdg_home / "lns"
+    config_dir = xdg_home / "nsd"
     config_dir.mkdir(parents=True, exist_ok=True)
     (config_dir / config_name).write_text('[global]\nlog_level = "debug"\n', encoding="utf-8")
     (config_dir / "h-corners.toml").write_text('[top-left]\ncommand = "notify-send top-left"\n', encoding="utf-8")
@@ -97,7 +97,7 @@ def test_missing_main_config_still_loads_companion_tool_configs(monkeypatch, tmp
     xdg_home = tmp_path / "xdg"
     monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
 
-    config_dir = xdg_home / "lns"
+    config_dir = xdg_home / "nsd"
     config_dir.mkdir(parents=True, exist_ok=True)
     (config_dir / "h-corners.toml").write_text('[bottom-right]\ncommand = "wbar"\n', encoding="utf-8")
 
