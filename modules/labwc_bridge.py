@@ -38,6 +38,7 @@ class LabwcBridgePlugin(BasePlugin):
         self._workspace_cmd = str(
             bridge_cfg.get("switch_workspace_command", "labwc-msg -t workspace {workspace}")
         )
+        self._reconfigure_cmd = str(bridge_cfg.get("reconfigure_command", "labwc --reconfigure"))
         self._last_status_raw = ""
 
     def register_handlers(self, daemon: Any) -> None:
@@ -54,8 +55,10 @@ class LabwcBridgePlugin(BasePlugin):
         """
         daemon.register_command_handler("labwc.close_window", self.handle_close_window)
         daemon.register_command_handler("labwc.switch_workspace", self.handle_switch_workspace)
+        daemon.register_command_handler("labwc.reconfigure", self.handle_reconfigure)
         # React to menu watcher updates so labwc can rebuild app menu entries.
         daemon.register_event_handler("nsd.menu_watcher:apps_changed", self.handle_apps_changed)
+        daemon.register_event_handler("nsd.nde_config_assembler:reconfigure_requested", self.handle_reconfigure_requested)
 
     def _run_command(self, command: str) -> tuple[int, str, str]:
         """Execute command string and return process result.
@@ -185,6 +188,20 @@ class LabwcBridgePlugin(BasePlugin):
             {"workspace": workspace},
         )
 
+    async def handle_reconfigure(self, payload: dict[str, Any]) -> None:
+        """Handle explicit labwc reconfigure command.
+
+        Parameters
+        ----------
+        payload : dict[str, Any]
+            Optional command context.
+
+        Returns
+        -------
+        None
+        """
+        await self._execute_and_broadcast_result("labwc.reconfigure", self._reconfigure_cmd, payload or None)
+
     async def _poll_status_once(self) -> None:
         """Poll labwc status once and broadcast on change.
 
@@ -233,8 +250,19 @@ class LabwcBridgePlugin(BasePlugin):
         None
         """
         self.log.info("Menu watcher reported changes, running labwc reconfigure")
-        # Call the existing execution/broadcast helper for consistent results.
-        await self._execute_and_broadcast_result(
-            "labwc.reconfigure",
-            "labwc --reconfigure",
-        )
+        await self.handle_reconfigure(payload)
+
+    async def handle_reconfigure_requested(self, payload: dict[str, Any]) -> None:
+        """Handle internal reconfigure request events from other plugins.
+
+        Parameters
+        ----------
+        payload : dict[str, Any]
+            Event payload from ``nsd.nde_config_assembler:reconfigure_requested``.
+
+        Returns
+        -------
+        None
+        """
+        self.log.info("Received internal reconfigure request from %s", payload.get("source", "unknown"))
+        await self.handle_reconfigure(payload)

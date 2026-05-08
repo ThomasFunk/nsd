@@ -7,6 +7,11 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- NDE XML config assembler plugin (`modules/nde_config_assembler.py`) with
+  recursive `<load .../>` resolution, top-level block merge, atomic write to
+  `~/.config/labwc/rc.xml`, and IPC action `nde.reconfigure`.
+- Unit tests for NDE assembler (`tests/test_nde_config_assembler.py`) covering
+  success path, traversal rejection, and include cycle detection.
 - Architecture diagrams in `docs/architecture/` (yEd `.graphml` format):
   overview, daemon state diagram, dataflow diagrams, and per-module sequence
   diagrams. English versions without `.de.` infix are git-tracked; German
@@ -15,6 +20,15 @@ The format is based on Keep a Changelog.
 
 ### Changed
 
+- `modules/labwc_bridge.py` now registers `labwc.reconfigure` command handling
+  and reacts to `nsd.nde_config_assembler:reconfigure_requested` internal
+  events.
+- `core/config.py` / `nsd.toml` now include defaults and sample keys for
+  `[nde_config]` and `labwc_bridge.reconfigure_command`.
+- `README.md` now documents NDE XML assembly, `<load .../>` syntax, and the
+  reconfigure flow.
+- `tests/test_config.py` updated from legacy XDG `lns` path expectation to
+  `nsd`.
 - `.gitignore` extended to exclude `*.de.graphml` and `*.de.md` files.
 
 ---

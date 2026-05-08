@@ -104,8 +104,67 @@ Important keys:
 - `[menu_watcher].extra_paths`
 - `[menu_watcher].debounce_seconds`
 - `[menu_watcher].include_app_list`
+- `[labwc_bridge].reconfigure_command`
+- `[nde_config].base_dir`
+- `[nde_config].main_file`
+- `[nde_config].output_file`
+- `[nde_config].backup`
+- `[nde_config].strict_validation`
 
 Example config is provided in `nsd.toml`.
+
+### NDE XML Config Assembly
+
+The optional `nde_config_assembler` module composes a full labwc `rc.xml`
+from NDE XML files.
+
+Flow:
+- Read main file from `~/.config/nde/config.xml` (or `[nde_config].main_file`).
+- Resolve custom XML load directives recursively.
+- Merge duplicate top-level blocks (for example multiple `keyboard` blocks).
+- Validate generated XML.
+- Write atomically to `~/.config/labwc/rc.xml`.
+- Emit `nde.reconfigure_result` and trigger `labwc.reconfigure`.
+
+Enable the module:
+
+```toml
+[modules]
+nde_config_assembler = true
+```
+
+Load directive syntax (all are supported):
+- `<load path="parts/keyboard.xml"/>`
+- `<load file="parts/keyboard.xml"/>`
+- `<load href="parts/keyboard.xml"/>`
+- `<load>parts/keyboard.xml</load>`
+
+Example main config (`~/.config/nde/config.xml`):
+
+```xml
+<labwc_config>
+	<keyboard>
+		<keybind key="A-W" action="default"/>
+	</keyboard>
+	<load path="parts/keyboard.xml"/>
+	<load path="parts/mouse.xml"/>
+</labwc_config>
+```
+
+Example part file (`~/.config/nde/parts/keyboard.xml`):
+
+```xml
+<keyboard>
+	<keybind key="A-W" action="override"/>
+	<keybind key="A-Return" action="terminal"/>
+</keyboard>
+```
+
+Security/safety rules:
+- Only files below `~/.config/nde` are allowed.
+- Absolute load paths are rejected.
+- `..` path traversal is rejected.
+- Load cycles are detected and rejected.
 
 ## IPC Protocol
 

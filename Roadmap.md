@@ -39,3 +39,27 @@ It is modular, communicates via JSON packets over Unix Domain Sockets, and is fu
 - [x] nsd-send CLI: Small Python tool to manually send JSON commands to the socket (for shell scripts).
 - [ ] Hot reload: Implement SIGHUP to reload TOML configuration without process restart.
 - [ ] Auto-discovery: Plugins should detect at runtime which other tools (such as wbar) are currently active.
+
+# Phase 5: NDE XML Config Assembly (Priority: High)
+- [x] Add `modules/nde_config_assembler.py` plugin to assemble labwc `rc.xml` from NDE XML parts.
+- [x] Read main file from `~/.config/nde/config.xml` and resolve custom load directives for XML part files.
+- [x] Support XML block parts (for example `<keyboard>...</keyboard>`, `<mouse>...</mouse>`) without top-level `<labwc_config>`.
+- [x] Compose final document with exactly one `<labwc_config>` root in the generated output.
+- [x] Define/implement merge semantics for duplicate top-level blocks:
+    - [x] keep exactly one block per top-level tag (`keyboard`, `mouse`, ...)
+    - [x] merge duplicate blocks by key attributes where possible (`key`, `name`, `button`, ...)
+    - [x] deterministic override order: later loaded parts can override earlier entries
+- [x] Validate generated XML before write (well-formedness + structure checks).
+- [x] Add safety checks: allow only files below `~/.config/nde`, reject absolute paths, reject `..` traversal, detect include cycles.
+- [x] Write atomically to `~/.config/labwc/rc.xml` (temp file + replace), optional backup of previous file.
+- [x] Expose IPC action `nde.reconfigure`:
+    - [x] assemble + validate + write `rc.xml`
+    - [x] send success/error result payload via IPC
+    - [x] trigger `labwc.reconfigure` via existing labwc bridge flow on success
+- [ ] Add tests for success path and failure modes.
+    - [x] success path
+    - [x] traversal rejection
+    - [x] include cycle detection
+    - [ ] missing file
+    - [ ] malformed XML
+    - [ ] invalid root/blocks

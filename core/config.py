@@ -63,6 +63,7 @@ class ConfigManager:
                 "hot_corner_relay": True,
                 "clipboard": True,
                 "menu_watcher": True,
+                "nde_config_assembler": False,
             },
             "automount": {
                 "mount_path": "/media",
@@ -73,6 +74,14 @@ class ConfigManager:
                 "status_command": "labwc-msg -j -t get_outputs",
                 "close_window_command": "labwc-msg -t close",
                 "switch_workspace_command": "labwc-msg -t workspace {workspace}",
+                "reconfigure_command": "labwc --reconfigure",
+            },
+            "nde_config": {
+                "base_dir": str(Path.home() / ".config" / "nde"),
+                "main_file": str(Path.home() / ".config" / "nde" / "config.xml"),
+                "output_file": str(Path.home() / ".config" / "labwc" / "rc.xml"),
+                "backup": True,
+                "strict_validation": True,
             },
             "hot_corner_relay": {
                 "result_broadcast": True,
