@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ThomasFunk/nsd/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ThomasFunk/nsd/actions/workflows/ci.yml)
 
-`nsd` is the central communication hub (server) for the **labwc-Nightshade** desktop environment.
+`nsd` is the central communication hub (server) for the **Nightshade** desktop environment.
 It coordinates plugins and external clients over one local IPC endpoint, so UI tools and helper daemons
 can exchange events and commands through a single message bus.
 
@@ -30,6 +30,9 @@ See [Roadmap.md](Roadmap.md) for details.
 - `nsd` broadcasts messages to connected clients.
 - Plugins can subscribe to internal daemon events via `<src>:<action>` keys
 	(for example `nsd.menu_watcher:apps_changed`).
+
+Architecture diagrams (yEd `.graphml` format, open with [yEd](https://www.yworks.com/products/yed)):
+[docs/architecture/](docs/architecture/) — Start with [Overview.graphml](docs/architecture/Overview.graphml)
 
 ## Requirements
 

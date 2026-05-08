@@ -34,4 +34,8 @@ startlog.txt
 *.orig
 nsd_*.py
 
+# ---- Localized architecture/docs (never track) ----
+*.de.graphml
+*.de.md
+
 

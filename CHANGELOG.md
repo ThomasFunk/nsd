@@ -7,6 +7,18 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- Architecture diagrams in `docs/architecture/` (yEd `.graphml` format):
+  overview, daemon state diagram, dataflow diagrams, and per-module sequence
+  diagrams. English versions without `.de.` infix are git-tracked; German
+  source files are listed in `.gitignore`.
+- `README.md` now links to `docs/architecture/` and `Overview.graphml`.
+
+### Changed
+
+- `.gitignore` extended to exclude `*.de.graphml` and `*.de.md` files.
+
+---
+
 - Internal daemon event handler registry (`register_event_handler`) with
   plugin-to-plugin dispatch for matching `<src>:<action>` messages.
 - Optional `wayland`-marked smoke test for real `labwc --reconfigure`
