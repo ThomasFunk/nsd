@@ -27,10 +27,10 @@ class ConfigManager:
 
     Resolution order for the config file is:
     1) Workspace-local file (`<workspace>/nsd.toml`)
-    2) XDG config file (`~/.config/lns/nsd.toml`, or `XDG_CONFIG_HOME`)
+    2) XDG config file (`~/.config/nsd/nsd.toml`, or `XDG_CONFIG_HOME`)
     """
 
-    def __init__(self, app_name: str = "lns", config_name: str = "nsd.toml") -> None:
+    def __init__(self, app_name: str = "nsd", config_name: str = "nsd.toml") -> None:
         """Initialize manager, define defaults, and load config immediately."""
         self.app_name = app_name
         self.config_name = config_name

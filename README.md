@@ -75,7 +75,7 @@ Default config file name: `nsd.toml`
 
 Resolution order:
 1. Workspace-local config: `<workspace>/nsd.toml`
-2. XDG config: `~/.config/lns/nsd.toml` (or `$XDG_CONFIG_HOME/lns/nsd.toml`)
+2. XDG config: `~/.config/nsd/nsd.toml` (or `$XDG_CONFIG_HOME/nsd/nsd.toml`)
 
 Optional companion config files in the same directory:
 - `h-corners.toml` for hot-corner behavior/configuration
