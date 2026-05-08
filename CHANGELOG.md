@@ -7,6 +7,12 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- No unreleased changes yet.
+
+## [0.5.0] - 2026-05-08
+
+### Added
+
 - NDE XML config assembler plugin (`modules/nde_config_assembler.py`) with
   recursive `<load .../>` resolution, top-level block merge, atomic write to
   `~/.config/labwc/rc.xml`, and IPC action `nde.reconfigure`.
@@ -14,25 +20,7 @@ The format is based on Keep a Changelog.
   success path, traversal rejection, and include cycle detection.
 - Architecture diagrams in `docs/architecture/` (yEd `.graphml` format):
   overview, daemon state diagram, dataflow diagrams, and per-module sequence
-  diagrams. English versions without `.de.` infix are git-tracked; German
-  source files are listed in `.gitignore`.
-- `README.md` now links to `docs/architecture/` and `Overview.graphml`.
-
-### Changed
-
-- `modules/labwc_bridge.py` now registers `labwc.reconfigure` command handling
-  and reacts to `nsd.nde_config_assembler:reconfigure_requested` internal
-  events.
-- `core/config.py` / `nsd.toml` now include defaults and sample keys for
-  `[nde_config]` and `labwc_bridge.reconfigure_command`.
-- `README.md` now documents NDE XML assembly, `<load .../>` syntax, and the
-  reconfigure flow.
-- `tests/test_config.py` updated from legacy XDG `lns` path expectation to
-  `nsd`.
-- `.gitignore` extended to exclude `*.de.graphml` and `*.de.md` files.
-
----
-
+  diagrams.
 - Internal daemon event handler registry (`register_event_handler`) with
   plugin-to-plugin dispatch for matching `<src>:<action>` messages.
 - Optional `wayland`-marked smoke test for real `labwc --reconfigure`
@@ -45,6 +33,18 @@ The format is based on Keep a Changelog.
   self-hosted runner issues (`WAYLAND_DISPLAY`, `XDG_RUNTIME_DIR`, PATH labels).
 
 ### Changed
+
+- `modules/labwc_bridge.py` now registers `labwc.reconfigure` command handling
+  and reacts to `nsd.nde_config_assembler:reconfigure_requested` internal
+  events.
+- `core/config.py` / `nsd.toml` now include defaults and sample keys for
+  `[nde_config]` and `labwc_bridge.reconfigure_command`.
+- `README.md` now documents NDE XML assembly, `<load .../>` syntax, and the
+  reconfigure flow.
+- `README.md` now links to `docs/architecture/` and `Overview.graphml`.
+- `tests/test_config.py` updated from legacy XDG `lns` path expectation to
+  `nsd`.
+- `.gitignore` extended to exclude `*.de.graphml` and `*.de.md` files.
 
 - `core/server.py` now dispatches internal handlers for `broadcast` and `event`
   messages in addition to client fan-out, enabling menu watcher to trigger

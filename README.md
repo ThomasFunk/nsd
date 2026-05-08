@@ -9,6 +9,13 @@ can exchange events and commands through a single message bus.
 ## Status
 
 The project is under active development.
+Current release: **0.5.0** (2026-05-08).
+
+Recent highlights in 0.5.0:
+- NDE XML config assembler (`nde.reconfigure`) with recursive `<load .../>` support
+- Internal event routing + labwc reconfigure integration
+- Architecture diagrams and extended CI/Wayland smoke documentation
+
 Phase 1 (Core & Infrastructure) is implemented:
 - Config manager with TOML + defaults
 - Async Unix socket IPC server
